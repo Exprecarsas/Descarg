@@ -169,66 +169,86 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
 
     alert('Reporte generado correctamente.');
 });
-let scanning = false;
+// Variables para manejo de audio
+const beepSound = new Audio('beep.mp3');
 
-function startBarcodeScanner() {
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner-container'), // Aquí se mostrará el video
-            constraints: {
-                facingMode: "environment" // Usar cámara trasera
-            }
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader", "upc_reader"] // Tipos de códigos de barras a detectar
-        }
-    }, function (err) {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        Quagga.start();
-        console.log("Quagga iniciado para escaneo de códigos de barras");
-    });
+let scanner; // Variable global para el escáner
 
-    Quagga.onDetected(function (data) {
-        const code = data.codeResult.code;
-        document.getElementById("result").textContent = `Código detectado: ${code}`;
-        handleScannedCode(code);
-    });
-}
-
-function stopBarcodeScanner() {
-    if (scanning) {
-        Quagga.stop();
-        scanning = false;
-        console.log("Escaneo detenido");
+// Mostrar la cámara y empezar a escanear
+document.getElementById('camera-btn').addEventListener('click', () => {
+    startScanner();
+    document.getElementById('close-camera-btn').style.display = 'block'; // Mostrar botón de cerrar cámara
+});
+// Detener el escáner de la cámara
+document.getElementById('close-camera-btn').addEventListener('click', () => {
+    if (scanner) {
+        scanner.stop(); // Detener el escáner
+        document.getElementById('close-camera-btn').style.display = 'none'; // Ocultar botón de cerrar cámara
     }
+});
+// Función para iniciar el escáner de códigos de barras y QR
+function startScanner() {
+    const scanner = new Instascan.Scanner({ video: document.createElement('video') });
+    scanner.addListener('scan', content => {
+        handleScan(content); // Manejar el código escaneado
+    });
+
+    // Intentar activar la cámara
+    Instascan.Camera.getCameras().then(cameras => {
+        if (cameras.length > 0) {
+            scanner.start(cameras[0]);
+        } else {
+            alert('No se encontraron cámaras.');
+        }
+    }).catch(e => console.error(e));
 }
 
-function handleScannedCode(code) {
-    const beepSound = document.getElementById("beep-sound");
-    beepSound.play(); // Reproducir sonido al detectar un código
+// Manejo del código escaneado
+function handleScan(content) {
+    // Reproducir sonido de alarma al escanear
+    beepSound.play();
 
-    const resultElement = document.getElementById("result");
-    
-    // Aquí puedes agregar tu lógica para validar el código escaneado
-    resultElement.textContent = `Código detectado: ${code}`;
-    resultElement.classList.add("success");
+    const barcode = content.trim();  // El código escaneado
 
-    // Continuar escaneando después de un pequeño retardo
+    // Verificar si el código escaneado está en la lista de productos
+    const product = products.find(p => p.codigo_barra === barcode);
+
+    if (product) {
+        document.getElementById('scanner-messages').innerHTML = `<span style="color: green;">✔ Código ${barcode} encontrado y registrado</span>`;
+        // Lógica para manejar el registro del código
+        updateProductCount(product);
+    } else {
+        document.getElementById('scanner-messages').innerHTML = `<span style="color: red;">✖ Código ${barcode} no está en la lista</span>`;
+    }
+
+    // Continuar escaneando más códigos
     setTimeout(() => {
-        resultElement.textContent = "Esperando más códigos...";
+        document.getElementById('scanner-messages').innerHTML = ''; // Limpiar el mensaje después de unos segundos
     }, 2000);
 }
 
-document.getElementById("start-scan").addEventListener("click", function () {
-    scanning = true;
-    startBarcodeScanner();
-});
+// Actualizar el conteo de productos
+function updateProductCount(product) {
+    scannedUnits[product.codigo_barra] = (scannedUnits[product.codigo_barra] || 0) + 1;
 
-document.getElementById("stop-scan").addEventListener("click", function () {
-    stopBarcodeScanner();
-});
+    // Verificar si se completaron todas las unidades
+    if (scannedUnits[product.codigo_barra] >= product.unidades) {
+        document.getElementById('scanner-messages').innerHTML = `<span style="color: green;">✔ Todas las unidades del código ${product.codigo_barra} completadas</span>`;
+    }
+
+    // Actualizar visualización de unidades
+    displayScannedUnits();
+}
+
+// Mostrar las unidades escaneadas
+function displayScannedUnits() {
+    let scannedList = '';
+    products.forEach(product => {
+        const scanned = scannedUnits[product.codigo_barra] || 0;
+        scannedList += `<p>${product.codigo_barra}: ${scanned}/${product.unidades}</p>`;
+    });
+    document.getElementById('scanned-list').innerHTML = scannedList;
+}
+
+// Asegúrate de tener un contenedor en HTML para mostrar las unidades escaneadas
+// <div id="scanned-list"></div>

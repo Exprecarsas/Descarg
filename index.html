@@ -26,15 +26,23 @@
     <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
     <button id="start-scanning">Iniciar Escaneo</button>
 
-    <!-- Botón de la cámara en la parte superior derecha -->
-    <button id="open-camera" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
-        <img src="https://img.icons8.com/ios-filled/50/camera.png" alt="Cámara" />
+    <!-- Botón de cámara en la parte superior derecha -->
+    <button id="camera-btn" style="position: absolute; top: 10px; right: 10px;">
+        <img src="camera-icon.png" alt="Cámara" style="width: 24px; height: 24px;">
     </button>
 
-    <div id="scanner-container"></div>
-    <button id="start-scan">Iniciar Escaneo</button>
-    <button id="stop-scan">Detener Escaneo</button>
-    <p id="result">Resultado: Ningún código escaneado.</p>
+    <!-- Barra de escaneo oculta -->
+    <input type="text" id="barcode-scanner" style="visibility: hidden;">
+
+    <!-- Contenedor para mensajes -->
+    <div id="scanner-messages"></div>
+
+    <!-- Botón para cerrar la cámara -->
+    <button id="close-camera-btn" style="position: absolute; top: 50px; right: 10px; display: none;">
+        Cerrar Cámara
+    </button>
+
+
 
     <!-- Sonido de notificación -->
     <audio id="beep-sound" src="beep.mp3" preload="auto"></audio>
@@ -62,6 +70,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
     <script src="app.js"></script>
 
 </body>
