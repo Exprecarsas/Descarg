@@ -170,20 +170,19 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
     alert('Reporte generado correctamente.');
 });
 let scanning = false;
-let unidadesEsperadas = ["RCR1543068", "XYZ9876543", "ABC1234567"]; // Lista de códigos esperados cargados del CSV
 
 function startBarcodeScanner() {
     Quagga.init({
         inputStream: {
             name: "Live",
             type: "LiveStream",
-            target: document.querySelector('#scanner-container'),
+            target: document.querySelector('#scanner-container'), // Aquí se mostrará el video
             constraints: {
-                facingMode: "environment" // Usar la cámara trasera
+                facingMode: "environment" // Usar cámara trasera
             }
         },
         decoder: {
-            readers: ["code_128_reader", "ean_reader", "upc_reader"] // Tipos de códigos de barras
+            readers: ["code_128_reader", "ean_reader", "upc_reader"] // Tipos de códigos de barras a detectar
         }
     }, function (err) {
         if (err) {
@@ -191,37 +190,14 @@ function startBarcodeScanner() {
             return;
         }
         Quagga.start();
-        console.log("Quagga iniciado para códigos de barras");
+        console.log("Quagga iniciado para escaneo de códigos de barras");
     });
 
     Quagga.onDetected(function (data) {
-        const code = data.codeResult.code.split('-')[0]; // Si tiene guion, solo usa la parte antes del guion
+        const code = data.codeResult.code;
+        document.getElementById("result").textContent = `Código detectado: ${code}`;
         handleScannedCode(code);
     });
-}
-
-function handleScannedCode(code) {
-    const beepSound = document.getElementById("beep-sound");
-    beepSound.play(); // Reproducir sonido de notificación
-
-    const resultElement = document.getElementById("result");
-    
-    if (unidadesEsperadas.includes(code)) {
-        resultElement.textContent = `✔️ Unidad escaneada: ${code}`;
-        resultElement.classList.add("success");
-        resultElement.classList.remove("error");
-        // Eliminar la unidad de la lista una vez escaneada
-        unidadesEsperadas = unidadesEsperadas.filter(item => item !== code);
-    } else {
-        resultElement.textContent = `❌ Unidad no encontrada: ${code}`;
-        resultElement.classList.add("error");
-        resultElement.classList.remove("success");
-    }
-
-    // Continuar escaneando
-    setTimeout(() => {
-        resultElement.textContent = "Esperando más códigos...";
-    }, 2000); // Mensaje de espera durante 2 segundos
 }
 
 function stopBarcodeScanner() {
@@ -232,37 +208,25 @@ function stopBarcodeScanner() {
     }
 }
 
-// Función para leer códigos QR usando jsQR
-function scanQRCode() {
-    const video = document.querySelector('video');
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+function handleScannedCode(code) {
+    const beepSound = document.getElementById("beep-sound");
+    beepSound.play(); // Reproducir sonido al detectar un código
 
-    function scan() {
-        if (!scanning) return;
+    const resultElement = document.getElementById("result");
+    
+    // Aquí puedes agregar tu lógica para validar el código escaneado
+    resultElement.textContent = `Código detectado: ${code}`;
+    resultElement.classList.add("success");
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
-
-        if (qrCode) {
-            const code = qrCode.data.split('-')[0]; // Si tiene guion, solo usa la parte antes del guion
-            handleScannedCode(code);
-        } else {
-            requestAnimationFrame(scan); // Continuar escaneando
-        }
-    }
-
-    requestAnimationFrame(scan);
+    // Continuar escaneando después de un pequeño retardo
+    setTimeout(() => {
+        resultElement.textContent = "Esperando más códigos...";
+    }, 2000);
 }
 
 document.getElementById("start-scan").addEventListener("click", function () {
     scanning = true;
     startBarcodeScanner();
-    scanQRCode();
 });
 
 document.getElementById("stop-scan").addEventListener("click", function () {
