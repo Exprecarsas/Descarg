@@ -132,12 +132,24 @@ li .city {
 }
 
 #scanner-container {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    z-index: 9999;
-    background-color: black;
-    display: none; /* Se mostrará cuando el escáner esté activo */
+    height: 300px;
+    border: 1px solid #ccc;
+    position: relative;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.success {
+    color: green;
+    font-size: 30px;
+}
+
+.error {
+    color: red;
+    font-size: 30px;
 }

@@ -169,108 +169,102 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
 
     alert('Reporte generado correctamente.');
 });
-// Función para inicializar Quagga y escanear
-function startScanner() {
+let scanning = false;
+let unidadesEsperadas = ["RCR1543068", "XYZ9876543", "ABC1234567"]; // Lista de códigos esperados cargados del CSV
+
+function startBarcodeScanner() {
     Quagga.init({
         inputStream: {
             name: "Live",
             type: "LiveStream",
-            target: document.querySelector('#scanner-container'), // El div donde aparecerá la cámara
+            target: document.querySelector('#scanner-container'),
             constraints: {
                 facingMode: "environment" // Usar la cámara trasera
             }
         },
         decoder: {
-            readers: ["code_128_reader", "ean_reader"] // Tipos de código de barras que queremos leer
+            readers: ["code_128_reader", "ean_reader", "upc_reader"] // Tipos de códigos de barras
         }
     }, function (err) {
         if (err) {
-            console.log(err);
+            console.error(err);
             return;
         }
-        console.log("Iniciando Quagga");
         Quagga.start();
+        console.log("Quagga iniciado para códigos de barras");
     });
 
     Quagga.onDetected(function (data) {
-        const scannedCode = data.codeResult.code;
-
-        // Validar si el código escaneado está en la lista de productos
-        let productFound = false;
-        products.forEach(product => {
-            if (product.codigo_barra === scannedCode) {
-                productFound = true;
-                scannedUnits[scannedCode] = (scannedUnits[scannedCode] || 0) + 1;
-
-                // Mostrar alerta de éxito con un sonido
-                new Audio('success.mp3').play(); // Reproduce un sonido de éxito
-                alert(`✔️ Unidad escaneada: ${scannedCode}`);
-            }
-        });
-
-        if (!productFound) {
-            new Audio('error.mp3').play(); // Reproduce un sonido de error
-            alert(`❌ Unidad no encontrada: ${scannedCode}`);
-        }
+        const code = data.codeResult.code.split('-')[0]; // Si tiene guion, solo usa la parte antes del guion
+        handleScannedCode(code);
     });
 }
 
-// Función para detener el escaneo
-function stopScanner() {
-    Quagga.stop();
+function handleScannedCode(code) {
+    const beepSound = document.getElementById("beep-sound");
+    beepSound.play(); // Reproducir sonido de notificación
+
+    const resultElement = document.getElementById("result");
+    
+    if (unidadesEsperadas.includes(code)) {
+        resultElement.textContent = `✔️ Unidad escaneada: ${code}`;
+        resultElement.classList.add("success");
+        resultElement.classList.remove("error");
+        // Eliminar la unidad de la lista una vez escaneada
+        unidadesEsperadas = unidadesEsperadas.filter(item => item !== code);
+    } else {
+        resultElement.textContent = `❌ Unidad no encontrada: ${code}`;
+        resultElement.classList.add("error");
+        resultElement.classList.remove("success");
+    }
+
+    // Continuar escaneando
+    setTimeout(() => {
+        resultElement.textContent = "Esperando más códigos...";
+    }, 2000); // Mensaje de espera durante 2 segundos
 }
 
-// Escuchar el evento del botón para abrir la cámara
-document.getElementById('open-camera').addEventListener('click', function () {
-    const scannerContainer = document.createElement('div');
-    scannerContainer.id = "scanner-container";
-    document.body.appendChild(scannerContainer);
+function stopBarcodeScanner() {
+    if (scanning) {
+        Quagga.stop();
+        scanning = false;
+        console.log("Escaneo detenido");
+    }
+}
 
-    startScanner();
-});
-function startScanner() {
-    // Mostrar el contenedor del escáner
-    document.getElementById('scanner-container').style.display = 'block';
+// Función para leer códigos QR usando jsQR
+function scanQRCode() {
+    const video = document.querySelector('video');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
 
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner-container'), // El div donde aparecerá la cámara
-            constraints: {
-                facingMode: { ideal: "environment" } // Usar cámara trasera
-            }
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader"] // Tipos de código de barras que queremos leer
+    function scan() {
+        if (!scanning) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+
+        if (qrCode) {
+            const code = qrCode.data.split('-')[0]; // Si tiene guion, solo usa la parte antes del guion
+            handleScannedCode(code);
+        } else {
+            requestAnimationFrame(scan); // Continuar escaneando
         }
-    }, function (err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        console.log("Iniciando Quagga con cámara trasera");
-        Quagga.start();
-    });
+    }
 
-    Quagga.onDetected(function (data) {
-        const scannedCode = data.codeResult.code;
-        // Aquí va tu lógica para el código escaneado
-    });
+    requestAnimationFrame(scan);
 }
 
-function stopScanner() {
-    // Ocultar el contenedor del escáner
-    document.getElementById('scanner-container').style.display = 'none';
-    Quagga.stop(); // Detiene el escáner
-}
-
-// Evento para cerrar el escáner cuando se presione el botón
-document.getElementById('close-scanner').addEventListener('click', function() {
-    stopScanner();
+document.getElementById("start-scan").addEventListener("click", function () {
+    scanning = true;
+    startBarcodeScanner();
+    scanQRCode();
 });
 
-// Evento para abrir la cámara y empezar el escaneo cuando se presione el botón de abrir cámara
-document.getElementById('open-camera').addEventListener('click', function() {
-    startScanner();
+document.getElementById("stop-scan").addEventListener("click", function () {
+    stopBarcodeScanner();
 });
