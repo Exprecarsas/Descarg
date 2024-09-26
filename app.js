@@ -1,39 +1,35 @@
-let products = [];  // Arreglo de productos
-let scannedUnits = {};  // Objeto para llevar el conteo de unidades escaneadas
-let globalUnitsScanned = 0;  // Contador global de unidades escaneadas
-let totalUnits = 0;  // Cantidad total de unidades a descargar
-let html5QrCode; // Variable global para acceder al escáner
-
+let products = [];
+let scannedUnits = {};
+let globalUnitsScanned = 0;
+let totalUnits = 0;
+let html5QrCode;
 
 // Cargar archivo CSV
 document.getElementById('load-csv').addEventListener('click', () => {
     const fileInput = document.getElementById('csvFileInput');
-    const file = fileInput.files[0];  // Obtener el archivo seleccionado
+    const file = fileInput.files[0];
 
     if (file) {
         Papa.parse(file, {
-            header: true,  // Asume que el CSV tiene encabezados
-            skipEmptyLines: true,  // Ignora líneas vacías
+            header: true,
+            skipEmptyLines: true,
             complete: function (results) {
-                console.log("Datos cargados del CSV:", results.data);
-
                 products = results.data.map(item => ({
                     codigo_barra: item['codigo_barra'].trim(),
                     cantidad: parseInt(item['cantidad'].trim()),
-                    ciudad: item['ciudad'].trim()  // Campo de ciudad
+                    ciudad: item['ciudad'].trim()
                 }));
 
-                // Inicializar el conteo de unidades escaneadas
                 scannedUnits = {};
-                globalUnitsScanned = 0;  // Reiniciar el contador global
-                totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);  // Total de unidades
+                globalUnitsScanned = 0;
+                totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);
+
                 products.forEach(product => {
-                    scannedUnits[product.codigo_barra] = 0;  // Inicialmente 0 unidades escaneadas
+                    scannedUnits[product.codigo_barra] = 0;
                 });
 
-                // Actualizar las listas después de cargar el CSV
                 updateScannedList();
-                updateGlobalCounter();  // Mostrar el total global inicial
+                updateGlobalCounter();
             },
             error: function (error) {
                 alert("Error al leer el archivo CSV: " + error.message);
@@ -47,38 +43,32 @@ document.getElementById('load-csv').addEventListener('click', () => {
 // Detectar cuando se presiona "Enter" en el campo de entrada del código de barras
 document.getElementById('barcodeInput').addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
-        event.preventDefault();  // Evitar el comportamiento por defecto (como el envío de formularios)
-
-        // Ejecutar la función que maneja el escaneo del código
-        handleBarcodeScan();
+        event.preventDefault();  // Evitar comportamiento por defecto
+        const barcodeInput = document.getElementById('barcodeInput').value.trim();  // Obtener el valor ingresado
+        handleBarcodeScan(barcodeInput);  // Llamar a la función pasando el valor escaneado manualmente
     }
 });
 
 // Función para manejar el escaneo del código de barras
-function handleBarcodeScan() {
-    const barcodeInput = document.getElementById('barcodeInput');
-    const scannedCode = barcodeInput.value.trim();  // Obtener el valor del campo de entrada
-
+function handleBarcodeScan(scannedCode) {
     // Verificar si el código escaneado está en la lista de productos
     const product = products.find(p => p.codigo_barra === scannedCode.split('-')[0]);
 
     if (product) {
-        // Incrementar el conteo de unidades escaneadas para el producto
         const currentScanned = scannedUnits[product.codigo_barra] || 0;
 
         if (currentScanned < product.cantidad) {  // Solo sumar si no se ha alcanzado el total
             scannedUnits[product.codigo_barra] = currentScanned + 1;
-            globalUnitsScanned += 1;  // Incrementar el contador global
+            globalUnitsScanned += 1;
 
-            // Actualizar las listas y el contador global
-            updateScannedList(product.codigo_barra);  // Pasar el código escaneado
-            updateGlobalCounter();
+            updateScannedList(product.codigo_barra);  // Actualizar lista con el código escaneado
+            updateGlobalCounter();  // Actualizar el contador global
         } else {
             alert("Todas las unidades de este producto ya han sido escaneadas.");
         }
 
         // Limpiar el campo de entrada para el próximo escaneo
-        barcodeInput.value = '';
+        document.getElementById('barcodeInput').value = '';
     } else {
         alert('El código escaneado no coincide con ningún producto.');
     }
@@ -87,9 +77,8 @@ function handleBarcodeScan() {
 // Función para actualizar la lista de unidades escaneadas
 function updateScannedList(scannedCode = '') {
     const scannedList = document.getElementById('scanned-list');
-    scannedList.innerHTML = '';  // Limpiar la lista escaneada
+    scannedList.innerHTML = '';
 
-    // Ordenar para que el último código escaneado aparezca primero
     const sortedProducts = products.slice().sort((a, b) => {
         if (a.codigo_barra === scannedCode) return -1;
         if (b.codigo_barra === scannedCode) return 1;
@@ -128,6 +117,40 @@ function updateGlobalCounter() {
     const globalCounter = document.getElementById('global-counter');
     globalCounter.innerText = `Unidades descargadas: ${globalUnitsScanned} de ${totalUnits}`;
 }
+
+// Iniciar la cámara
+document.getElementById('btn-abrir-camara').addEventListener('click', function() {
+    const scannerContainer = document.getElementById('scanner-container');
+    scannerContainer.style.display = 'block';
+
+    html5QrCode = new Html5Qrcode("scanner-container");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 300, height: 300 }
+        },
+        (decodedText, decodedResult) => {
+            console.log(`Código escaneado: ${decodedText}`);
+            handleBarcodeScan(decodedText);  // Usar la función de manejo del código escaneado
+        },
+        (errorMessage) => {
+            console.log(`Error de escaneo: ${errorMessage}`);
+        }
+    ).catch((err) => {
+        console.error("Error al iniciar la cámara:", err);
+    });
+
+    document.getElementById('close-scanner').addEventListener('click', function() {
+        html5QrCode.stop().then(() => {
+            console.log("Escáner detenido.");
+            scannerContainer.style.display = 'none';
+        }).catch(err => {
+            console.error("Error al detener la cámara:", err);
+        });
+    });
+});
+
 // Mostrar modal al hacer clic en "Finalizar Descarga"
 document.getElementById('finalizar-descarga').addEventListener('click', () => {
     const modal = document.getElementById('modal');
@@ -171,68 +194,3 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
 
     alert('Reporte generado correctamente.');
 });
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Función para iniciar la cámara y solicitar permiso automáticamente
-    function startCamera() {
-        const scannerContainer = document.getElementById('scanner-container');
-
-        // Asegúrate de que el contenedor está vacío antes de iniciar
-        scannerContainer.innerHTML = '';
-
-        // Crear el objeto de Html5Qrcode
-        const html5QrCode = new Html5Qrcode("scanner-container");
-
-        // Solicitar acceso a la cámara
-        html5QrCode.start(
-            { facingMode: "environment" },  // Usa la cámara trasera en móviles
-            {
-                fps: 10,  // Velocidad de escaneo
-                qrbox: { width: 300, height: 300 },  // Tamaño del cuadro de escaneo
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.QR_CODE,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E
-                ]
-            },
-            (decodedText, decodedResult) => {
-                // Código escaneado con éxito
-                console.log(`Código escaneado: ${decodedText}`);
-                handleBarcodeScan(decodedText);  // Llamar a la función que maneja el código
-            },
-            (errorMessage) => {
-                // Error de escaneo
-                console.log(`Error de escaneo: ${errorMessage}`);
-            }
-        ).catch((err) => {
-            // Error al iniciar la cámara o al obtener permisos
-            console.error("Error al iniciar la cámara o al solicitar permisos:", err);
-            alert("No se pudo iniciar la cámara. Asegúrate de permitir el acceso.");
-        });
-    }
-
-    // Iniciar el escáner cuando el usuario presione el botón de "Abrir Cámara"
-    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
-        const scannerContainer = document.getElementById('scanner-container');
-        scannerContainer.style.display = 'block';  // Mostrar el contenedor del escáner
-
-        // Iniciar la cámara al hacer clic en el botón, lo que solicita permisos al usuario
-        startCamera();  // Llamar a la función para iniciar la cámara por primera vez
-    });
-    // Función para detener el escáner cuando se presione el botón 'close-scanner'
-document.getElementById('close-scanner').addEventListener('click', function () {
-    if (Html5Qrcode) {
-        Html5Qrcode.stop().then(() => {
-            console.log("Escáner detenido.");
-            document.getElementById('scanner-container').style.display = 'none'; // Ocultar el escáner
-        }).catch(err => {
-            console.error("Error al detener el escáner:", err);
-        });
-    }
-});
-});
-

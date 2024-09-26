@@ -1,11 +1,13 @@
 /* Estilos generales para todos los dispositivos */
 body {
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
 }
 
 /* Estilos específicos para dispositivos móviles (pantallas menores a 768px de ancho) */
 @media (max-width: 768px) {
-
     /* Ajustar el tamaño de los botones en móvil */
     button {
         width: 100%;
@@ -29,7 +31,6 @@ body {
 
 /* Estilos para dispositivos de escritorio (pantallas mayores a 768px de ancho) */
 @media (min-width: 769px) {
-
     /* Tamaño estándar en escritorio */
     button {
         width: 200px;
@@ -49,23 +50,13 @@ body {
     }
 }
 
-/* Estilo general */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-}
-
 /* Estilo para la lista de productos escaneados (grid) */
 #scanned-list {
     justify-content: center;
     align-items: center;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    /* 3 columnas por fila */
     gap: 10px;
-    /* Espacio entre los elementos */
 }
 
 #scanned-list li {
@@ -78,18 +69,15 @@ body {
 
 /* Colores para diferentes estados */
 .status-complete {
-    background-color: #4CAF50;
-    /* Verde si está completo */
+    background-color: #4CAF50; /* Verde si está completo */
 }
 
 .status-warning {
-    background-color: #FFC107;
-    /* Amarillo si está en progreso */
+    background-color: #FFC107; /* Amarillo si está en progreso */
 }
 
 .status-incomplete {
-    background-color: #e4362ab4;
-    /* Rojo si no está escaneado */
+    background-color: #e4362ab4; /* Rojo si no está escaneado */
 }
 
 /* Barra de progreso */
@@ -132,8 +120,7 @@ button {
 }
 
 button:hover {
-    background-color: #cc414d;
-
+    background-color: #b33a40;
 }
 
 /* Estilo específico para la ciudad */
@@ -161,6 +148,9 @@ li .city {
     padding: 20px;
     border-radius: 5px;
     text-align: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
 }
 
 #btn-abrir-camara {
@@ -170,13 +160,6 @@ li .city {
     align-items: right;
     border: none;
     cursor: pointer;
-}
-#logo-exprecar {
-    display: flex;
-    background-color: transparent;
-    justify-content: left;
-    align-items: left;
-    border: none;
 }
 
 #btn-abrir-camara img {
@@ -193,9 +176,9 @@ li .city {
     cursor: pointer;
     border-radius: 5px;
     z-index: 10001;
-    /* Asegura que esté por encima del video de la cámara */
 }
 
+/* Estilos para el contenedor de la cámara */
 #scanner-container {
     position: fixed;
     top: 0;
@@ -203,9 +186,8 @@ li .city {
     width: 100%;
     height: 100%;
     z-index: 9999;
-    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro para mejor visibilidad */
+    background-color: rgba(0, 0, 0, 0.8);
     display: none;
-    /* Se mostrará cuando el escáner esté activo */
 }
 
 #global-counter {
@@ -219,6 +201,6 @@ li .city {
     padding: 10px;
     font-size: 20px;
     z-index: 10001;
-    /* Asegurarse de que esté en la capa superior */
     display: block;
+    transition: all 0.3s ease;
 }
