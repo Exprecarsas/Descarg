@@ -172,61 +172,61 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
     alert('Reporte generado correctamente.');
 });
 
-// Función para iniciar el escáner
-document.getElementById('btn-abrir-camara').addEventListener('click', function() {
-    const scannerContainer = document.getElementById('scanner-container');
-    scannerContainer.style.display = 'block'; // Mostrar el contenedor del escáner
+document.addEventListener('DOMContentLoaded', function () {
+    // Función para iniciar la cámara y solicitar permiso automáticamente
+    function startCamera() {
+        const scannerContainer = document.getElementById('scanner-container');
 
-    // Verificar si la cámara ya está activa
-    if (html5QrCode) {
-        // Si ya está activa, detenerla antes de reiniciarla
-        html5QrCode.stop().then(() => {
-            startCamera(); // Iniciar la cámara
-        }).catch(err => {
-            console.error("Error al detener la cámara antes de reiniciarla:", err);
+        // Asegúrate de que el contenedor está vacío antes de iniciar
+        scannerContainer.innerHTML = '';
+
+        // Crear el objeto de Html5Qrcode
+        const html5QrCode = new Html5Qrcode("scanner-container");
+
+        // Solicitar acceso a la cámara
+        html5QrCode.start(
+            { facingMode: "environment" },  // Usa la cámara trasera en móviles
+            {
+                fps: 10,  // Velocidad de escaneo
+                qrbox: { width: 300, height: 300 },  // Tamaño del cuadro de escaneo
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.QR_CODE,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E
+                ]
+            },
+            (decodedText, decodedResult) => {
+                // Código escaneado con éxito
+                console.log(`Código escaneado: ${decodedText}`);
+                handleBarcodeScan(decodedText);  // Llamar a la función que maneja el código
+            },
+            (errorMessage) => {
+                // Error de escaneo
+                console.log(`Error de escaneo: ${errorMessage}`);
+            }
+        ).catch((err) => {
+            // Error al iniciar la cámara o al obtener permisos
+            console.error("Error al iniciar la cámara o al solicitar permisos:", err);
+            alert("No se pudo iniciar la cámara. Asegúrate de permitir el acceso.");
         });
-    } else {
-        startCamera(); // Iniciar la cámara por primera vez
     }
-});
 
-// Función para iniciar la cámara
-function startCamera() {
-    html5QrCode = new Html5Qrcode("scanner-container");
+    // Iniciar el escáner cuando el usuario presione el botón de "Abrir Cámara"
+    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
+        const scannerContainer = document.getElementById('scanner-container');
+        scannerContainer.style.display = 'block';  // Mostrar el contenedor del escáner
 
-    html5QrCode.start(
-        { facingMode: "environment" },  // Cámara trasera en dispositivos móviles
-        {
-            fps: 10,  // Velocidad de escaneo
-            qrbox: { width: 300, height: 300 },
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.QR_CODE,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E
-            ]
-        },
-        (decodedText, decodedResult) => {
-            // Código escaneado
-            globalCounter++;
-            document.getElementById('global-counter').innerText = `${globalCounter} de ${totalUnits}`;
-            console.log(`Código escaneado: ${decodedText}`);
-        },
-        (errorMessage) => {
-            console.log(`Error de escaneo: ${errorMessage}`);
-        }
-    ).catch((err) => {
-        console.error("Error al iniciar la cámara:", err);
+        // Iniciar la cámara al hacer clic en el botón, lo que solicita permisos al usuario
+        startCamera();  // Llamar a la función para iniciar la cámara por primera vez
     });
-}
-
-// Función para detener el escáner cuando se presione el botón 'close-scanner'
-document.getElementById('close-scanner').addEventListener('click', function() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
+    // Función para detener el escáner cuando se presione el botón 'close-scanner'
+document.getElementById('close-scanner').addEventListener('click', function () {
+    if (Html5Qrcode) {
+        Html5Qrcode.stop().then(() => {
             console.log("Escáner detenido.");
             document.getElementById('scanner-container').style.display = 'none'; // Ocultar el escáner
         }).catch(err => {
@@ -234,3 +234,5 @@ document.getElementById('close-scanner').addEventListener('click', function() {
         });
     }
 });
+});
+
