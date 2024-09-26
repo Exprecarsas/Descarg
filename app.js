@@ -2,6 +2,7 @@ let products = [];  // Arreglo de productos
 let scannedUnits = {};  // Objeto para llevar el conteo de unidades escaneadas
 let globalUnitsScanned = 0;  // Contador global de unidades escaneadas
 let totalUnits = 0;  // Cantidad total de unidades a descargar
+let html5QrCode; // Variable global para acceder al escáner
 
 
 // Cargar archivo CSV
@@ -170,125 +171,61 @@ document.getElementById('generar-reporte').addEventListener('click', () => {
 
     alert('Reporte generado correctamente.');
 });
-// Función para inicializar Quagga y escanear
-function startScanner() {
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner-container'), // El div donde aparecerá la cámara
-            constraints: {
-                facingMode: "environment" // Usar la cámara trasera
+
+// Función para iniciar el escáner
+document.getElementById('btn-abrir-camara').addEventListener('click', function() {
+    const scannerContainer = document.getElementById('scanner-container');
+    scannerContainer.style.display = 'block'; // Mostrar el contenedor del escáner
+
+    html5QrCode = new Html5Qrcode("scanner-container");
+
+    html5QrCode.start(
+        { facingMode: "environment" },  // Cámara trasera
+        {
+            fps: 10,  // Velocidad de escaneo
+            qrbox: { width: 300, height: 300 },
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.QR_CODE,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E
+            ]
+        },
+        (decodedText, decodedResult) => {
+            // Actualizar el contador global
+            globalCounter++;
+            document.getElementById('global-counter').innerText = `${globalCounter} de ${totalUnits}`;
+
+            if (globalCounter >= totalUnits) {
+                alert("Todos los códigos han sido escaneados.");
+                html5QrCode.stop().then(() => {
+                    console.log("Escáner detenido.");
+                    scannerContainer.style.display = 'none'; // Ocultar el contenedor
+                }).catch(err => {
+                    console.error("Error al detener el escáner:", err);
+                });
             }
         },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader"] // Tipos de código de barras que queremos leer
+        (errorMessage) => {
+            console.log(`Error: ${errorMessage}`);
         }
-    }, function (err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        console.log("Iniciando Quagga");
-        Quagga.start();
+    ).catch((err) => {
+        console.log(`No se pudo iniciar el escáner: ${err}`);
     });
-
-    Quagga.onDetected(function (data) {
-        const scannedCode = data.codeResult.code;
-
-        // Validar si el código escaneado está en la lista de productos
-        let productFound = false;
-        products.forEach(product => {
-            if (product.codigo_barra === scannedCode) {
-                productFound = true;
-                scannedUnits[scannedCode] = (scannedUnits[scannedCode] || 0) + 1;
-
-                // Mostrar alerta de éxito con un sonido
-                new Audio('success.mp3').play(); // Reproduce un sonido de éxito
-                alert(`✔️ Unidad escaneada: ${scannedCode}`);
-            }
-        });
-
-        if (!productFound) {
-            new Audio('error.mp3').play(); // Reproduce un sonido de error
-            alert(`❌ Unidad no encontrada: ${scannedCode}`);
-        }
-    });
-}
-
-// Función para detener el escaneo
-function stopScanner() {
-    Quagga.stop();
-}
-
-// Escuchar el evento del botón para abrir la cámara
-document.getElementById('open-camera').addEventListener('click', function () {
-    const scannerContainer = document.createElement('div');
-    scannerContainer.id = "scanner-container";
-    document.body.appendChild(scannerContainer);
-
-    startScanner();
 });
-function startScanner() {
-    // Mostrar el contenedor del escáner
-    document.getElementById('scanner-container').style.display = 'block';
 
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#scanner-container'), // El div donde aparecerá la cámara
-            constraints: {
-                facingMode: { ideal: "environment" } // Usar cámara trasera
-            }
-        },
-        decoder: {
-            readers: ["code_128_reader", "ean_reader"] // Tipos de código de barras que queremos leer
-        }
-    }, function (err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        console.log("Iniciando Quagga con cámara trasera");
-        Quagga.start();
-    });
-
-    Quagga.onDetected(function (data) {
-        const scannedCode = data.codeResult.code;
-        // Aquí va tu lógica para el código escaneado
-    });
-}
-
-function stopScanner() {
-    // Ocultar el contenedor del escáner
-    document.getElementById('scanner-container').style.display = 'none';
-    Quagga.stop(); // Detiene el escáner
-}
-
-// Evento para cerrar el escáner cuando se presione el botón
+// Función para detener el escáner cuando se presione el botón 'close-scanner'
 document.getElementById('close-scanner').addEventListener('click', function() {
-    stopScanner();
-});
-
-// Evento para abrir la cámara y empezar el escaneo cuando se presione el botón de abrir cámara
-document.getElementById('open-camera').addEventListener('click', function() {
-    startScanner();
-});
-document.getElementById('open-camera').addEventListener('click', function() {
-    navigator.camera.getPicture(onSuccess, onFail, { 
-        quality: 50,
-        destinationType: Camera.DestinationType.DATA_URL,
-        sourceType: Camera.PictureSourceType.CAMERA,
-        cameraDirection: Camera.Direction.BACK // Usar cámara trasera
-    });
-
-    function onSuccess(imageData) {
-        console.log("Imagen capturada");
-        // Aquí va tu lógica para el código escaneado
-    }
-
-    function onFail(message) {
-        alert('Error al abrir la cámara: ' + message);
+    if (html5QrCode) {
+        // Verificar si el escáner está corriendo y detenerlo
+        html5QrCode.stop().then(() => {
+            console.log("Escáner detenido.");
+            document.getElementById('scanner-container').style.display = 'none'; // Ocultar el contenedor del escáner
+        }).catch(err => {
+            console.error("Error al detener el escáner:", err);
+        });
     }
 });
