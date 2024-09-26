@@ -177,10 +177,25 @@ document.getElementById('btn-abrir-camara').addEventListener('click', function()
     const scannerContainer = document.getElementById('scanner-container');
     scannerContainer.style.display = 'block'; // Mostrar el contenedor del escáner
 
+    // Verificar si la cámara ya está activa
+    if (html5QrCode) {
+        // Si ya está activa, detenerla antes de reiniciarla
+        html5QrCode.stop().then(() => {
+            startCamera(); // Iniciar la cámara
+        }).catch(err => {
+            console.error("Error al detener la cámara antes de reiniciarla:", err);
+        });
+    } else {
+        startCamera(); // Iniciar la cámara por primera vez
+    }
+});
+
+// Función para iniciar la cámara
+function startCamera() {
     html5QrCode = new Html5Qrcode("scanner-container");
 
     html5QrCode.start(
-        { facingMode: "environment" },  // Cámara trasera
+        { facingMode: "environment" },  // Cámara trasera en dispositivos móviles
         {
             fps: 10,  // Velocidad de escaneo
             qrbox: { width: 300, height: 300 },
@@ -195,35 +210,25 @@ document.getElementById('btn-abrir-camara').addEventListener('click', function()
             ]
         },
         (decodedText, decodedResult) => {
-            // Actualizar el contador global
+            // Código escaneado
             globalCounter++;
             document.getElementById('global-counter').innerText = `${globalCounter} de ${totalUnits}`;
-
-            if (globalCounter >= totalUnits) {
-                alert("Todos los códigos han sido escaneados.");
-                html5QrCode.stop().then(() => {
-                    console.log("Escáner detenido.");
-                    scannerContainer.style.display = 'none'; // Ocultar el contenedor
-                }).catch(err => {
-                    console.error("Error al detener el escáner:", err);
-                });
-            }
+            console.log(`Código escaneado: ${decodedText}`);
         },
         (errorMessage) => {
-            console.log(`Error: ${errorMessage}`);
+            console.log(`Error de escaneo: ${errorMessage}`);
         }
     ).catch((err) => {
-        console.log(`No se pudo iniciar el escáner: ${err}`);
+        console.error("Error al iniciar la cámara:", err);
     });
-});
+}
 
 // Función para detener el escáner cuando se presione el botón 'close-scanner'
 document.getElementById('close-scanner').addEventListener('click', function() {
     if (html5QrCode) {
-        // Verificar si el escáner está corriendo y detenerlo
         html5QrCode.stop().then(() => {
             console.log("Escáner detenido.");
-            document.getElementById('scanner-container').style.display = 'none'; // Ocultar el contenedor del escáner
+            document.getElementById('scanner-container').style.display = 'none'; // Ocultar el escáner
         }).catch(err => {
             console.error("Error al detener el escáner:", err);
         });
