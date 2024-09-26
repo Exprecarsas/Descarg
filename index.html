@@ -8,15 +8,19 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
+
+
 <body align="center">
-    <div align="center">
-        <img src="somos de aqui.png" width="180" height="280" alt="LOGO">
+    <div id="logo-exprecar">
+        <img src="LOGO EXPRECAR2.png" width="100" height="45" alt="logo">
+    </div>
+    <div>
+        <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
     </div>
     <div>
         <h1>Escaneo de Productos</h1>
-        <h2 id="global-counter">Unidades descargadas: 0 de 0</h2>
+        <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
     </div>
-
 
     <!-- Input para subir archivo CSV -->
     <input type="file" id="csvFileInput" accept=".csv">
@@ -25,27 +29,22 @@
     <!-- Campo de entrada para escanear código de barras -->
     <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
     <button id="start-scanning">Iniciar Escaneo</button>
+    <div>
+        <!-- Botón de la cámara en la parte superior derecha -->
+        <button id="open-camera" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
+            <img src="https://images.vexels.com/content/157862/preview/barcode-scanning-icon-1c9119.png"
+             alt="Cámara" />
+        </button>
+    </div>
 
-    <!-- Botón de cámara en la parte superior derecha -->
-    <button id="camera-btn" style="position: absolute; top: 10px; right: 10px;">
-        <img src="camera-icon.png" alt="Cámara" style="width: 24px; height: 24px;">
-    </button>
+    <div id="scanner-container">
+        <!-- Botón para cerrar el escáner -->
+        <button id="close-scanner" style="position: absolute; top: 10px; right: 10px; z-index: 10000;">
+            Cerrar
+        </button>
+        <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
+    </div>
 
-    <!-- Barra de escaneo oculta -->
-    <input type="text" id="barcode-scanner" style="visibility: hidden;">
-
-    <!-- Contenedor para mensajes -->
-    <div id="scanner-messages"></div>
-
-    <!-- Botón para cerrar la cámara -->
-    <button id="close-camera-btn" style="position: absolute; top: 50px; right: 10px; display: none;">
-        Cerrar Cámara
-    </button>
-
-
-
-    <!-- Sonido de notificación -->
-    <audio id="beep-sound" src="beep.mp3" preload="auto"></audio>
 
     <h2>Unidades Escaneadas</h2>
     <ul id="scanned-list"></ul>
@@ -64,15 +63,11 @@
             <button id="generar-reporte">Generar Reporte</button>
         </div>
     </div>
-
-    <!-- Librerías --> <!-- Incluye la biblioteca PapaParse -->
+    <!-- Incluye la biblioteca PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
     <script src="app.js"></script>
-
 </body>
 
 </html>

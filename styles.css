@@ -1,3 +1,54 @@
+/* Estilos generales para todos los dispositivos */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Estilos específicos para dispositivos móviles (pantallas menores a 768px de ancho) */
+@media (max-width: 768px) {
+
+    /* Ajustar el tamaño de los botones en móvil */
+    button {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+    }
+
+    /* Ajustar los campos de entrada */
+    input {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    /* Cambiar el tamaño del modal en móvil */
+    .modal-content {
+        width: 90%;
+        margin: auto;
+    }
+}
+
+/* Estilos para dispositivos de escritorio (pantallas mayores a 768px de ancho) */
+@media (min-width: 769px) {
+
+    /* Tamaño estándar en escritorio */
+    button {
+        width: 200px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    input {
+        width: 300px;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .modal-content {
+        width: 50%;
+        margin: auto;
+    }
+}
+
 /* Estilo general */
 body {
     font-family: Arial, sans-serif;
@@ -8,9 +59,11 @@ body {
 
 /* Estilo para la lista de productos escaneados (grid) */
 #scanned-list {
+    justify-content: center;
+    align-items: center;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    /* 5 columnas por fila */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columnas por fila */
     gap: 10px;
     /* Espacio entre los elementos */
 }
@@ -111,22 +164,36 @@ li .city {
 }
 
 #open-camera {
+    display: flex;
     background-color: transparent;
+    justify-content: right;
+    align-items: right;
     border: none;
     cursor: pointer;
+}
+#logo-exprecar {
+    display: flex;
+    background-color: transparent;
+    justify-content: left;
+    align-items: left;
+    border: none;
 }
 
 #open-camera img {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
 }
-#close-camera-btn {
-    background-color: #ff4d4d;
-    border: none;
-    border-radius: 50%;
-    padding: 10px;
+
+#close-scanner {
+    background-color: red;
     color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
     cursor: pointer;
+    border-radius: 5px;
+    z-index: 10001;
+    /* Asegura que esté por encima del video de la cámara */
 }
 
 #scanner-container {
@@ -137,19 +204,21 @@ li .city {
     height: 100%;
     z-index: 9999;
     background-color: black;
-    display: none; /* Se mostrará cuando el escáner esté activo */
-}
-#camera-btn {
-    background-color: #007bff;
-    border: none;
-    border-radius: 50%;
-    padding: 10px;
-    cursor: pointer;
+    display: none;
+    /* Se mostrará cuando el escáner esté activo */
 }
 
-#scanner-messages {
-    font-size: 18px;
-    margin-top: 20px;
-    color: green;
-    font-weight: bold;
+#global-counter {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #c03440d5;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 20px;
+    z-index: 10001;
+    /* Asegurarse de que esté en la capa superior */
+    display: block;
 }
