@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let totalUnits = 0; // Total de unidades esperadas
     let html5QrCode;
 
-    // Sonidos para éxito y error
+    // Sonidos de éxito y error
     const successSound = document.getElementById('success-sound');
     const errorSound = document.getElementById('error-sound');
 
@@ -59,33 +59,81 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Configurar la inicialización de la cámara
+    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
+        const scannerContainer = document.getElementById('scanner-container');
+        const mainContent = document.getElementById('main-content');
+
+        // Mostrar el contenedor de la cámara
+        scannerContainer.style.display = 'block';
+        mainContent.style.display = 'none'; // Ocultar el contenido principal
+
+        // Iniciar la cámara usando `Html5Qrcode`
+        try {
+            html5QrCode = new Html5Qrcode("scanner-video");
+
+            html5QrCode.start(
+                { facingMode: "environment" }, // Usar la cámara trasera en móviles
+                {
+                    fps: 10, // Velocidad de fotogramas
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText) => {
+                    handleBarcodeScan(decodedText); // Manejar el escaneo del código de barras
+                },
+                (errorMessage) => {
+                    console.log(`Error de escaneo: ${errorMessage}`);
+                }
+            ).then(() => {
+                console.log("Cámara iniciada correctamente.");
+            }).catch((err) => {
+                console.error("Error al iniciar la cámara:", err);
+                alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
+            });
+        } catch (e) {
+            console.error("Error al crear Html5Qrcode:", e);
+        }
+    });
+
+    // Función para detener la cámara y volver a la vista principal
+    document.getElementById('close-scanner').addEventListener('click', function () {
+        const scannerContainer = document.getElementById('scanner-container');
+        const mainContent = document.getElementById('main-content');
+
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                scannerContainer.style.display = 'none'; // Ocultar el contenedor del escáner
+                mainContent.style.display = 'block'; // Mostrar el contenido principal
+                console.log("Cámara detenida.");
+            }).catch(err => {
+                console.error("Error al detener la cámara:", err);
+            });
+        }
+    });
+
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
-        // Buscar el producto correspondiente al código escaneado
         const product = products.find(p => p.codigo_barra === scannedCode);
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
 
             if (currentScanned < product.cantidad) {
-                // Incrementar unidades escaneadas para el producto
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                // Reproducir sonido de éxito y actualizar la lista
-                successSound.play();
+                successSound.play(); // Reproducir sonido de éxito
                 showTemporaryResult(true); // Mostrar ícono de éxito
                 updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
                 updateGlobalCounter(); // Actualizar contador global
             }
         } else {
-            // Reproducir sonido de error y mostrar el mensaje de error
-            errorSound.play();
+            errorSound.play(); // Reproducir sonido de error
             showTemporaryResult(false); // Mostrar ícono de error
             alert("El código escaneado no coincide con ningún producto.");
         }
 
-        document.getElementById('barcodeInput').value = ''; // Limpiar el campo de entrada
+        document.getElementById('barcodeInput').value = '';
     }
 
     // Mostrar el resultado temporalmente (verde para éxito, rojo para error)
@@ -104,27 +152,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000); // Ocultar después de 3 segundos
     }
 
-    // Función para detener la cámara y volver a la vista principal
-    document.getElementById('close-scanner').addEventListener('click', function() {
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
-
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                scannerContainer.style.display = 'none'; // Ocultar contenedor de cámara
-                mainContent.classList.remove('hidden'); // Mostrar contenido principal
-            }).catch(err => {
-                console.error("Error al detener la cámara:", err);
-            });
-        }
-    });
-
     // Función para actualizar la lista de unidades escaneadas y ordenar
     function updateScannedList(scannedCode = '') {
         const scannedList = document.getElementById('scanned-list');
         scannedList.innerHTML = '';
 
-        // Ordenar para que el último código escaneado aparezca primero
         const sortedProducts = products.slice().sort((a, b) => {
             if (a.codigo_barra === scannedCode) return -1; // Mover el producto escaneado al principio
             if (b.codigo_barra === scannedCode) return 1;
