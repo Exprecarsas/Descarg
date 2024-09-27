@@ -9,43 +9,51 @@
 </head>
 
 <body>
-    <div id="logo-exprecar">
-        <img src="LOGO EXPRECAR2.png" width="120" height="60" alt="logo">
-    </div>
-    <div>
-        <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
-    </div>
-    <div>
-        <h1>Escaneo de Productos</h1>
-        <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
-    </div>
 
-    <!-- Input para subir archivo CSV -->
-    <input type="file" id="csvFileInput" accept=".csv">
-    <button id="load-csv">Cargar CSV</button><br>
 
-    <!-- Campo de entrada para escanear código de barras -->
-    <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
-    <button id="start-scanning">Iniciar Escaneo</button>
+    <div id="main-content">
+        <div id="logo-exprecar">
+            <img src="LOGO EXPRECAR2.png" width="120" height="60" alt="logo">
+        </div>
+        <div>
+            <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
+        </div>
+        <div>
+            <h1>Escaneo de Productos</h1>
+            <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
+        </div>
 
-    <div>
-        <!-- Botón de la cámara en la parte superior derecha -->
-        <button id="btn-abrir-camara" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
-            <img src="https://images.vexels.com/content/157862/preview/barcode-scanning-icon-1c9119.png" alt="Cámara" />
-        </button>
+        <!-- Input para subir archivo CSV -->
+        <input type="file" id="csvFileInput" accept=".csv">
+        <button id="load-csv">Cargar CSV</button><br>
+
+        <!-- Campo de entrada para escanear código de barras -->
+        <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
+        <button id="start-scanning" style="display: none;">Iniciar Escaneo</button>
+
+        <div>
+            <!-- Botón de la cámara en la parte superior derecha -->
+            <button id="btn-abrir-camara" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+                <img src="https://images.vexels.com/content/157862/preview/barcode-scanning-icon-1c9119.png"
+                    alt="Cámara" />
+            </button>
+        </div>
+
+        <h2>Unidades Escaneadas</h2>
+        <ul id="scanned-list"></ul>
+
+        <!-- Botón para finalizar descarga -->
+        <button id="finalizar-descarga">Finalizar Descarga</button>
     </div>
 
     <div id="scanner-container" style="display: none;">
+        <!-- Video de la cámara se mostrará aquí -->
+        <div id="scanner-video"></div>
         <!-- Botón para cerrar el escáner -->
         <button id="close-scanner" style="position: absolute; top: 10px; right: 10px; z-index: 10000;">Cerrar</button>
+        <!-- Contador global de unidades escaneadas -->
         <h2 id="global-counter-scanner">Unidades descargadas: 0 de 0 </h2>
     </div>
-
-    <h2>Unidades Escaneadas</h2>
-    <ul id="scanned-list"></ul>
-
-    <!-- Botón para finalizar descarga -->
-    <button id="finalizar-descarga">Finalizar Descarga</button>
 
     <!-- Modal para ingresar datos adicionales -->
     <div id="modal" class="modal" style="display: none;">
@@ -63,6 +71,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="app.js"></script>
+
 </body>
 
 </html>
