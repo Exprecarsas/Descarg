@@ -76,6 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error("Error al crear Html5Qrcode:", e);
         }
     });
+    // Detectar la tecla "Enter" en el campo de entrada de código de barras
+    document.getElementById('barcodeInput').addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Evitar el comportamiento por defecto
+            handleBarcodeScan(document.getElementById('barcodeInput').value.trim());
+        }
+    });
 
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
