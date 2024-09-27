@@ -19,31 +19,30 @@
             <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
         </div>
         <div>
-            <h1>Escaneo de Producto</h1>
+            <h1>Escaneo de Productos</h1>
             <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
         </div>
+    </div>
+    <!-- Input para subir archivo CSV -->
+    <input type="file" id="csvFileInput" accept=".csv">
+    <button id="load-csv">Cargar CSV</button><br>
 
-        <!-- Input para subir archivo CSV -->
-        <input type="file" id="csvFileInput" accept=".csv">
-        <button id="load-csv">Cargar CSV</button><br>
+    <!-- Campo de entrada para escanear código de barras -->
+    <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
+    <button id="start-scanning" >Iniciar Escaneo</button>
 
-        <!-- Campo de entrada para escanear código de barras -->
-        <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
-        <button id="start-scanning">Iniciar Escaneo</button>
+    <div>
+        <!-- Botón de la cámara en la parte superior derecha -->
+        <button id="btn-abrir-camara" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+            <img src="https://images.vexels.com/content/157862/preview/barcode-scanning-icon-1c9119.png" alt="Cámara" />
+        </button>
+    </div>
 
-        <div>
-            <!-- Botón de la cámara en la parte superior derecha -->
-            <button id="btn-abrir-camara" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
-                <img src="https://images.vexels.com/content/157862/preview/barcode-scanning-icon-1c9119.png"
-                    alt="Cámara" />
-            </button>
-        </div>
+    <h2>Unidades Escaneadas</h2>
+    <ul id="scanned-list"></ul>
 
-        <h2>Unidades Escaneadas</h2>
-        <ul id="scanned-list"></ul>
-
-        <!-- Botón para finalizar descarga -->
-        <button id="finalizar-descarga">Finalizar Descarga</button>
+    <!-- Botón para finalizar descarga -->
+    <button id="finalizar-descarga">Finalizar Descarga</button>
     </div>
 
     <div id="scanner-container" style="display: none;">
@@ -53,6 +52,10 @@
         <button id="close-scanner" style="position: absolute; top: 10px; right: 10px; z-index: 10000;">Cerrar</button>
         <!-- Contador global de unidades escaneadas -->
         <h2 id="global-counter-scanner">Unidades descargadas: 0 de 0 </h2>
+        <!-- Contenedor para el mensaje de éxito temporal -->
+        <div id="scan-result" class="hidden">
+            <span id="result-icon">&#10004;</span> <!-- Icono de "check" -->
+        </div>
     </div>
 
     <!-- Modal para ingresar datos adicionales -->
@@ -65,6 +68,10 @@
             <button id="generar-reporte">Generar Reporte</button>
         </div>
     </div>
+
+    <!-- Elementos de audio para los sonidos -->
+    <audio id="success-sound" src="sounds/success.mp3"></audio>
+    <audio id="error-sound" src="sounds/error.mp3"></audio>
 
     <!-- Incluye las bibliotecas necesarias -->
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>

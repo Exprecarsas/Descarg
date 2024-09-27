@@ -258,3 +258,32 @@ li .city {
     z-index: 10000;
     /* Asegura que esté sobre el video */
 }
+/* Contenedor para mostrar el ícono de resultado */
+#scan-result {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 255, 0, 0.8); /* Fondo verde para éxito */
+    color: white;
+    padding: 20px;
+    font-size: 48px;
+    border-radius: 50%;
+    display: none; /* Oculto por defecto */
+    z-index: 10001; /* Asegura que esté sobre todo */
+}
+
+/* Estilo para el ícono */
+#result-icon {
+    display: inline-block;
+}
+
+/* Clase para mostrar temporalmente el contenedor */
+.show-result {
+    display: block !important; /* Fuerza a mostrar */
+}
+
+/* Sonidos ocultos */
+audio {
+    display: none;
+}

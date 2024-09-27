@@ -1,11 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
-    let products = [];
-    let scannedUnits = {};
-    let globalUnitsScanned = 0;
-    let totalUnits = 0;
+    let products = []; // Lista de productos del CSV
+    let scannedUnits = {}; // Unidades escaneadas para cada producto
+    let globalUnitsScanned = 0; // Contador global de unidades escaneadas
+    let totalUnits = 0; // Total de unidades esperadas
     let html5QrCode;
 
-    // Cargar archivo CSV
+    // Sonidos para éxito y error
+    const successSound = document.getElementById('success-sound');
+    const errorSound = document.getElementById('error-sound');
+
+    // Contenedor del resultado temporal
+    const scanResultContainer = document.getElementById('scan-result');
+    const resultIcon = document.getElementById('result-icon');
+
+    // Cargar el archivo CSV y extraer los productos
     document.getElementById('load-csv').addEventListener('click', () => {
         const fileInput = document.getElementById('csvFileInput');
         const file = fileInput.files[0];
@@ -21,14 +29,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         ciudad: item['ciudad'].trim()
                     }));
 
+                    // Reiniciar contadores
                     scannedUnits = {};
                     globalUnitsScanned = 0;
                     totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);
 
                     products.forEach(product => {
-                        scannedUnits[product.codigo_barra] = 0;
+                        scannedUnits[product.codigo_barra] = 0; // Inicializar las unidades escaneadas en 0
                     });
 
+                    // Actualizar lista y contadores globales
                     updateScannedList();
                     updateGlobalCounter();
                 },
@@ -41,41 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Iniciar la cámara cuando se presiona el botón de "Abrir Cámara"
-    document.getElementById('btn-abrir-camara').addEventListener('click', function() {
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
-
-        // Ocultar el contenido principal y mostrar el contenedor de la cámara
-        mainContent.classList.add('hidden'); // Ocultar el contenido principal
-        scannerContainer.style.display = 'flex'; // Mostrar el contenedor de la cámara
-
-        try {
-            // Inicializar Html5Qrcode en el contenedor "scanner-video"
-            html5QrCode = new Html5Qrcode("scanner-video");
-            html5QrCode.start(
-                { facingMode: "environment" },  // Usar la cámara trasera
-                {
-                    fps: 10,
-                    qrbox: { width: 300, height: 300 }
-                },
-                (decodedText) => {
-                    console.log(`Código escaneado: ${decodedText}`);
-                    handleBarcodeScan(decodedText);  // Manejar el código escaneado
-                },
-                (errorMessage) => {
-                    console.log(`Error de escaneo: ${errorMessage}`);
-                }
-            ).then(() => {
-                console.log("Cámara iniciada correctamente.");
-            }).catch((err) => {
-                console.error("Error al iniciar la cámara:", err);
-                alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
-            });
-        } catch (e) {
-            console.error("Error al crear Html5Qrcode:", e);
-        }
-    });
     // Detectar la tecla "Enter" en el campo de entrada de código de barras
     document.getElementById('barcodeInput').addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
@@ -86,25 +61,47 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
-        const product = products.find(p => p.codigo_barra === scannedCode.split('-')[0]);
+        // Buscar el producto correspondiente al código escaneado
+        const product = products.find(p => p.codigo_barra === scannedCode);
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
 
             if (currentScanned < product.cantidad) {
+                // Incrementar unidades escaneadas para el producto
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                updateScannedList(product.codigo_barra);
-                updateGlobalCounter();
-            } else {
-                alert("Todas las unidades de este producto ya han sido escaneadas.");
+                // Reproducir sonido de éxito y actualizar la lista
+                successSound.play();
+                showTemporaryResult(true); // Mostrar ícono de éxito
+                updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
+                updateGlobalCounter(); // Actualizar contador global
             }
-
-            document.getElementById('barcodeInput').value = '';
         } else {
-            alert('El código escaneado no coincide con ningún producto.');
+            // Reproducir sonido de error y mostrar el mensaje de error
+            errorSound.play();
+            showTemporaryResult(false); // Mostrar ícono de error
+            alert("El código escaneado no coincide con ningún producto.");
         }
+
+        document.getElementById('barcodeInput').value = ''; // Limpiar el campo de entrada
+    }
+
+    // Mostrar el resultado temporalmente (verde para éxito, rojo para error)
+    function showTemporaryResult(isSuccess) {
+        if (isSuccess) {
+            resultIcon.innerHTML = '&#10004;'; // Icono de check
+            scanResultContainer.style.backgroundColor = 'rgba(0, 255, 0, 0.8)'; // Verde para éxito
+        } else {
+            resultIcon.innerHTML = '&#10006;'; // Icono de cruz
+            scanResultContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.8)'; // Rojo para error
+        }
+
+        scanResultContainer.classList.add('show-result');
+        setTimeout(() => {
+            scanResultContainer.classList.remove('show-result');
+        }, 3000); // Ocultar después de 3 segundos
     }
 
     // Función para detener la cámara y volver a la vista principal
@@ -114,22 +111,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                console.log("Cámara detenida.");
-                scannerContainer.style.display = 'none';  // Ocultar el contenedor de la cámara
-                mainContent.classList.remove('hidden');  // Mostrar el contenido principal
+                scannerContainer.style.display = 'none'; // Ocultar contenedor de cámara
+                mainContent.classList.remove('hidden'); // Mostrar contenido principal
             }).catch(err => {
                 console.error("Error al detener la cámara:", err);
             });
         }
     });
 
-    // Función para actualizar la lista de unidades escaneadas
+    // Función para actualizar la lista de unidades escaneadas y ordenar
     function updateScannedList(scannedCode = '') {
         const scannedList = document.getElementById('scanned-list');
         scannedList.innerHTML = '';
 
+        // Ordenar para que el último código escaneado aparezca primero
         const sortedProducts = products.slice().sort((a, b) => {
-            if (a.codigo_barra === scannedCode) return -1;
+            if (a.codigo_barra === scannedCode) return -1; // Mover el producto escaneado al principio
             if (b.codigo_barra === scannedCode) return 1;
             return 0;
         });
