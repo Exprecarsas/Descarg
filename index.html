@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
 
 <body>
     <div id="logo-exprecar">
-        <img src="LOGO EXPRECAR2.png" width="100" height="45" alt="logo">
+        <img src="LOGO EXPRECAR2.png" width="120" height="60" alt="logo">
     </div>
     <div>
         <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
@@ -26,7 +27,7 @@
     <!-- Campo de entrada para escanear código de barras -->
     <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
     <button id="start-scanning">Iniciar Escaneo</button>
-    
+
     <div>
         <!-- Botón de la cámara en la parte superior derecha -->
         <button id="btn-abrir-camara" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
@@ -58,9 +59,10 @@
     </div>
 
     <!-- Incluye las bibliotecas necesarias -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>        
     <script src="app.js"></script>
 </body>
+
 </html>
