@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
-        const product = products.find(p => p.codigo_barra === scannedCode);
+        const product = products.find(p => p.codigo_barra === scannedCode.split('-')[0]);
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
