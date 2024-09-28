@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let scannedUnits = {}; // Unidades escaneadas para cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Total de unidades esperadas
-    let html5QrCode;
+    let html5QrCode; // Variable para manejar el escáner
     let audioContext; // Contexto de audio para generar tonos
 
     // Inicializar contexto de audio para generar tonos
@@ -15,26 +15,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Generar un tono usando Web Audio API
-    function playTone(frequency, duration, type = 'sine', volume = 1.0) {
+    function playTone(frequency, duration, type = 'sine', volume = 2.5) {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        oscillator.type = type; // Tipo de onda: 'sine', 'square', 'sawtooth', 'triangle'
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); // Frecuencia en Hz
-        gainNode.gain.value = volume; // Establecer el volumen del tono
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        gainNode.gain.value = volume;
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         oscillator.start();
         setTimeout(() => {
             oscillator.stop();
-        }, duration); // Duración del tono en milisegundos
+        }, duration);
     }
 
     // Habilitar el contexto de audio al hacer clic en cualquier botón (para móviles)
     document.body.addEventListener('click', initializeAudioContext, { once: true });
-
-    // Contenedor del resultado temporal
-    const scanResultContainer = document.getElementById('scan-result');
-    const resultIcon = document.getElementById('result-icon');
 
     // Cargar el archivo CSV y extraer los productos
     document.getElementById('load-csv').addEventListener('click', () => {
@@ -82,9 +78,55 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Configurar la inicialización de la cámara
+    // Mostrar modal para finalizar descarga
+    document.getElementById('finalizar-descarga').addEventListener('click', () => {
+        const modal = document.getElementById('modal');
+        modal.style.display = 'flex';
+        const today = new Date().toLocaleDateString();
+        document.getElementById('fecha').value = today;
+    });
+
+    // Cerrar el modal al hacer clic en el botón "Cerrar"
+    document.getElementById('cerrar-modal').addEventListener('click', () => {
+        const modal = document.getElementById('modal');
+        modal.style.display = 'none';
+    });
+
+    // Generar el reporte en Excel con la información adicional
+    document.getElementById('generar-reporte').addEventListener('click', () => {
+        const placa = document.getElementById('placa').value;
+        const remitente = document.getElementById('remitente').value;
+        const fecha = document.getElementById('fecha').value;
+
+        if (!placa || !remitente) {
+            alert("Por favor, completa todos los campos.");
+            return;
+        }
+
+        const reportData = [
+            ['Placa de Vehículo', placa],
+            ['Remitente', remitente],
+            ['Fecha de Descargue', fecha],
+            [],
+            ['Código de Barra', 'Unidades Escaneadas', 'Ciudad']
+        ];
+
+        products.forEach(product => {
+            reportData.push([product.codigo_barra, scannedUnits[product.codigo_barra], product.ciudad]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(reportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Reporte Descargue');
+        XLSX.writeFile(wb, `reporte_descargue_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+        alert('Reporte generado correctamente.');
+        document.getElementById('modal').style.display = 'none';
+    });
+
+    // Configurar la inicialización de la cámara con soporte para múltiples formatos
     document.getElementById('btn-abrir-camara').addEventListener('click', function () {
-        initializeAudioContext(); // Asegurarse de que el contexto de audio esté inicializado
+        initializeAudioContext(); // Asegúrate de que el contexto de audio esté inicializado
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
 
@@ -96,11 +138,25 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             html5QrCode = new Html5Qrcode("scanner-video");
 
+            // Usar múltiples formatos soportados para mejor reconocimiento
+            const supportedFormats = [
+                "QR_CODE",
+                "CODE_128",
+                "CODE_39",
+                "EAN_13",
+                "EAN_8",
+                "UPC_A",
+                "UPC_E",
+                "CODE_93"
+            ];
+
+            // Ajustes del escáner
             html5QrCode.start(
                 { facingMode: "environment" }, // Usar la cámara trasera en móviles
                 {
-                    fps: 10, // Velocidad de fotogramas
-                    qrbox: { width: 250, height: 250 }
+                    fps: 15, // Aumentar los FPS para mejorar la detección
+                    qrbox: { width: 350, height: 350 }, // Cuadro de escaneo más grande
+                    supportedScanTypes: supportedFormats // Formatos a soportar manualmente
                 },
                 (decodedText) => {
                     handleBarcodeScan(decodedText); // Manejar el escaneo del código de barras
@@ -109,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log(`Error de escaneo: ${errorMessage}`);
                 }
             ).then(() => {
-                console.log("Cámara iniciada correctamente.");
+                console.log("Cámara iniciada correctamente con formatos mejorados.");
             }).catch((err) => {
                 console.error("Error al iniciar la cámara:", err);
                 alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
@@ -137,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
-        // Obtener solo la parte del código antes del guion
         const sanitizedCode = scannedCode.split('-')[0].trim();
         const product = products.find(p => p.codigo_barra === sanitizedCode);
 
@@ -148,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                playTone(440, 200, 'sine', 1.5); // Tono de éxito más fuerte
+                playTone(440, 500, 'sine', 2.5); // Tono de éxito más fuerte
                 showTemporaryResult(true); // Mostrar ícono de éxito
                 updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
                 updateGlobalCounter(); // Actualizar contador global
@@ -164,6 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Mostrar el resultado temporalmente (verde para éxito, rojo para error)
     function showTemporaryResult(isSuccess) {
+        const scanResultContainer = document.getElementById('scan-result');
+        const resultIcon = document.getElementById('result-icon');
+        
         if (isSuccess) {
             resultIcon.innerHTML = '&#10004;'; // Icono de check
             scanResultContainer.style.backgroundColor = 'rgba(0, 255, 0, 0.8)'; // Verde para éxito
