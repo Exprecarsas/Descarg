@@ -4,10 +4,22 @@ document.addEventListener('DOMContentLoaded', function () {
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Total de unidades esperadas
     let html5QrCode;
+    let audioContext; // Contexto de audio para dispositivos móviles
+
+    // Función para inicializar el contexto de audio (importante para dispositivos móviles)
+    function initializeAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log("Contexto de audio inicializado.");
+        }
+    }
 
     // Sonidos de éxito y error
-    const successSound = document.getElementById('success-sound');
-    const errorSound = document.getElementById('error-sound');
+    const successSound = new Audio("sounds/success.mp3");
+    const errorSound = new Audio("sounds/error.mp3");
+
+    // Habilitar el contexto de audio al hacer clic en cualquier botón (para móviles)
+    document.body.addEventListener('click', initializeAudioContext, { once: true });
 
     // Contenedor del resultado temporal
     const scanResultContainer = document.getElementById('scan-result');
@@ -61,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Configurar la inicialización de la cámara
     document.getElementById('btn-abrir-camara').addEventListener('click', function () {
+        initializeAudioContext(); // Asegurarse de que el contexto de audio esté inicializado
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
 
@@ -113,7 +126,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
-        const product = products.find(p => p.codigo_barra === scannedCode.split('-')[0]);
+        // Obtener solo la parte del código antes del guion
+        const sanitizedCode = scannedCode.split('-')[0].trim();
+
+        const product = products.find(p => p.codigo_barra === sanitizedCode);
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
