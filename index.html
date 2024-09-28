@@ -19,7 +19,7 @@
             <img src="somos de aqui.png" width="150" height="150" alt="LOGO">
         </div>
         <div>
-            <h1>Escaneo de Unidade</h1>
+            <h1>Escaneo de Unidades</h1>
             <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
         </div>
     </div>
@@ -29,7 +29,7 @@
 
     <!-- Campo de entrada para escanear código de barras -->
     <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
-    <button id="start-scanning" >Iniciar Escaneo</button>
+    <button id="start-scanning">Iniciar Escaneo</button>
 
     <div>
         <!-- Botón de la cámara en la parte superior derecha -->
@@ -47,7 +47,10 @@
 
     <div id="scanner-container" style="display: none;">
         <!-- Video de la cámara se mostrará aquí -->
-        <div id="scanner-video"></div>
+        <div id="scanner-video">
+            <!-- Cuadro de enfoque -->
+            <div id="focus-box" class="focus-box"></div>
+        </div>
         <!-- Botón para cerrar el escáner -->
         <button id="close-scanner" style="position: absolute; top: 10px; right: 10px; z-index: 10000;">Cerrar</button>
         <!-- Contador global de unidades escaneadas -->
@@ -66,7 +69,8 @@
             <input type="text" id="remitente" placeholder="Remitente">
             <input type="text" id="fecha" disabled>
             <button id="generar-reporte">Generar Reporte</button>
-            <button id="cerrar-modal" style="background-color: #cc414d; color: white; margin-top: 10px;">Cerrar</button> <!-- Botón de cierre -->
+            <button id="cerrar-modal" style="background-color: #cc414d; color: white; margin-top: 10px;">Cerrar</button>
+            <!-- Botón de cierre -->
         </div>
     </div>
 
