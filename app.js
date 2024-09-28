@@ -147,13 +147,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                playTone(440, 200); // Tono de éxito (frecuencia 440 Hz, 200 ms)
+                playTone(480, 300); // Tono de éxito (frecuencia 480 Hz, 300 ms)
                 showTemporaryResult(true); // Mostrar ícono de éxito
                 updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
                 updateGlobalCounter(); // Actualizar contador global
             }
         } else {
-            playTone(220, 500, 'square'); // Tono de error (frecuencia 220 Hz, 500 ms, cuadrado)
+            playTone(220, 200, 'square'); // Tono de error (frecuencia 220 Hz, 200 ms, cuadrado)
             showTemporaryResult(false); // Mostrar ícono de error
             alert("El código escaneado no coincide con ningún producto.");
         }
