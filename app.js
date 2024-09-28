@@ -15,11 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Generar un tono usando Web Audio API
-    function playTone(frequency, duration, type = 'sine') {
+    function playTone(frequency, duration, type = 'sine', volume = 1.0) {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         oscillator.type = type; // Tipo de onda: 'sine', 'square', 'sawtooth', 'triangle'
         oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); // Frecuencia en Hz
+        gainNode.gain.value = volume; // Establecer el volumen del tono
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         oscillator.start();
@@ -147,13 +148,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                playTone(300, 300); // Tono de éxito (frecuencia 300 Hz, 300 ms)
+                playTone(440, 200, 'sine', 1.5); // Tono de éxito más fuerte
                 showTemporaryResult(true); // Mostrar ícono de éxito
                 updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
                 updateGlobalCounter(); // Actualizar contador global
             }
         } else {
-            playTone(250, 200, 'square'); // Tono de error (frecuencia 250 Hz, 200 ms, cuadrado)
+            playTone(220, 500, 'square', 0.7); // Tono de error con volumen bajo
             showTemporaryResult(false); // Mostrar ícono de error
             alert("El código escaneado no coincide con ningún producto.");
         }
