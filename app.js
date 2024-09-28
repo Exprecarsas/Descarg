@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Total de unidades esperadas
     let html5QrCode;
-    let audioContext; // Contexto de audio para dispositivos móviles
+    let audioContext; // Contexto de audio para generar tonos
 
-    // Función para inicializar el contexto de audio (importante para dispositivos móviles)
+    // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -14,9 +14,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Sonidos de éxito y error
-    const successSound = new Audio("sounds/success.mp3");
-    const errorSound = new Audio("sounds/error.mp3");
+    // Generar un tono usando Web Audio API
+    function playTone(frequency, duration, type = 'sine') {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.type = type; // Tipo de onda: 'sine', 'square', 'sawtooth', 'triangle'
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); // Frecuencia en Hz
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        setTimeout(() => {
+            oscillator.stop();
+        }, duration); // Duración del tono en milisegundos
+    }
 
     // Habilitar el contexto de audio al hacer clic en cualquier botón (para móviles)
     document.body.addEventListener('click', initializeAudioContext, { once: true });
@@ -128,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleBarcodeScan(scannedCode) {
         // Obtener solo la parte del código antes del guion
         const sanitizedCode = scannedCode.split('-')[0].trim();
-
         const product = products.find(p => p.codigo_barra === sanitizedCode);
 
         if (product) {
@@ -138,13 +147,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                successSound.play(); // Reproducir sonido de éxito
+                playTone(440, 200); // Tono de éxito (frecuencia 440 Hz, 200 ms)
                 showTemporaryResult(true); // Mostrar ícono de éxito
                 updateScannedList(product.codigo_barra); // Actualizar la lista con el último código
                 updateGlobalCounter(); // Actualizar contador global
             }
         } else {
-            errorSound.play(); // Reproducir sonido de error
+            playTone(220, 500, 'square'); // Tono de error (frecuencia 220 Hz, 500 ms, cuadrado)
             showTemporaryResult(false); // Mostrar ícono de error
             alert("El código escaneado no coincide con ningún producto.");
         }
