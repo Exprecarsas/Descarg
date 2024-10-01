@@ -6,8 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let html5QrCode; // Objeto para manejar el escáner
     let audioContext; // Contexto de audio para generar tonos
 
-    const focusBox = document.getElementById("focus-box"); // Cuadro de enfoque dinámico
-
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
         if (!audioContext) {
@@ -31,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, duration);
     }
 
-    // Habilitar contexto de audio al hacer clic en el primer evento (para móviles)
+    // Habilitar contexto de audio al hacer clic en cualquier botón (para móviles)
     document.body.addEventListener('click', initializeAudioContext, { once: true });
 
     // Cargar archivo CSV y extraer productos
@@ -53,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     scannedUnits = {};
                     globalUnitsScanned = 0;
                     totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);
+
                     products.forEach(product => {
                         scannedUnits[product.codigo_barra] = 0;
                     });
@@ -77,14 +76,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Mostrar modal para finalizar la descarga
+    // Mostrar modal para finalizar descarga
     document.getElementById('finalizar-descarga').addEventListener('click', () => {
         const modal = document.getElementById('modal');
         modal.style.display = 'flex';
         document.getElementById('fecha').value = new Date().toLocaleDateString();
     });
 
-    // Cerrar el modal de información de la descarga
+    // Cerrar el modal de descarga
     document.getElementById('cerrar-modal').addEventListener('click', () => {
         document.getElementById('modal').style.display = 'none';
     });
@@ -121,41 +120,34 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal').style.display = 'none';
     });
 
-    // Mostrar la cámara y el cuadro de enfoque dinámico
+    // Abrir la cámara y mostrar el escáner con el cuadro de enfoque
     document.getElementById('btn-abrir-camara').addEventListener('click', function () {
-        initializeAudioContext();
+        initializeAudioContext(); // Asegurar que el contexto de audio esté habilitado
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
 
+        // Mostrar el contenedor del escáner
         scannerContainer.style.display = 'block';
-        mainContent.style.display = 'none';
+        mainContent.style.display = 'none'; // Ocultar contenido principal
 
         try {
             html5QrCode = new Html5Qrcode("scanner-video");
 
             const config = {
                 fps: 15,
-                qrbox: { width: 250, height: 250 },
-                disableFlip: true
+                qrbox: { width: 250, height: 250 }, // Cuadro de escaneo centrado
+                disableFlip: true // No voltear imagen
             };
 
             html5QrCode.start(
-                { facingMode: "environment" },
+                { facingMode: "environment" }, // Usar la cámara trasera
                 config,
-                (decodedText, decodedResult) => {
+                (decodedText) => {
                     handleBarcodeScan(decodedText);
-
-                    // Ajustar el cuadro de enfoque dinámico según la ubicación del código detectado
-                    const box = decodedResult.location;
-                    if (box) {
-                        focusBox.style.width = `${Math.abs(box.topLeftCorner.x - box.bottomRightCorner.x)}px`;
-                        focusBox.style.height = `${Math.abs(box.topLeftCorner.y - box.bottomRightCorner.y)}px`;
-                        focusBox.style.left = `${box.topLeftCorner.x}px`;
-                        focusBox.style.top = `${box.topLeftCorner.y}px`;
-                        focusBox.style.display = 'block';
-                    }
                 },
-                (errorMessage) => console.log(`Error de escaneo: ${errorMessage}`)
+                (errorMessage) => {
+                    console.log(`Error de escaneo: ${errorMessage}`);
+                }
             ).then(() => {
                 console.log("Cámara iniciada correctamente.");
             }).catch((err) => {
@@ -167,17 +159,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Detener la cámara y ocultar el cuadro de enfoque dinámico
+    // Detener la cámara y volver a la vista principal
     document.getElementById('close-scanner').addEventListener('click', function () {
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
 
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                focusBox.style.display = 'none';
                 scannerContainer.style.display = 'none';
                 mainContent.style.display = 'block';
-            }).catch(err => console.error("Error al detener la cámara:", err));
+                console.log("Cámara detenida.");
+            }).catch(err => {
+                console.error("Error al detener la cámara:", err);
+            });
         }
     });
 
@@ -188,20 +182,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
+
             if (currentScanned < product.cantidad) {
                 scannedUnits[product.codigo_barra] = currentScanned + 1;
                 globalUnitsScanned += 1;
 
-                playTone(440, 200, 'sine'); // Tono de éxito
+                playTone(440, 200, 'sine', 1.5); // Tono de éxito
                 showTemporaryResult(true);
                 updateScannedList(product.codigo_barra);
                 updateGlobalCounter();
             }
         } else {
-            playTone(220, 500, 'square'); // Tono de error
+            playTone(220, 500, 'square', 0.7); // Tono de error
             showTemporaryResult(false);
             alert("El código escaneado no coincide con ningún producto.");
         }
+
         document.getElementById('barcodeInput').value = '';
     }
 
