@@ -3,10 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
-    let html5QrCode; // Objeto del escáner
+    let html5QrCode; // Objeto para manejar el escáner
     let audioContext; // Contexto de audio para generar tonos
 
-    // Inicializar el contexto de audio
+    const focusBox = document.getElementById("focus-box"); // Cuadro de enfoque dinámico
+
+    // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -29,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, duration);
     }
 
-    // Habilitar contexto de audio en el primer clic (para dispositivos móviles)
+    // Habilitar contexto de audio al hacer clic en el primer evento (para móviles)
     document.body.addEventListener('click', initializeAudioContext, { once: true });
 
     // Cargar archivo CSV y extraer productos
@@ -67,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Manejar la tecla "Enter" en el campo de entrada del código de barras
+    // Manejar la tecla "Enter" en el campo de entrada de código de barras
     document.getElementById('barcodeInput').addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault(); // Evitar el comportamiento por defecto
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Mostrar modal de información de la descarga
+    // Mostrar modal para finalizar la descarga
     document.getElementById('finalizar-descarga').addEventListener('click', () => {
         const modal = document.getElementById('modal');
         modal.style.display = 'flex';
@@ -87,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal').style.display = 'none';
     });
 
-    // Generar reporte en Excel
+    // Generar reporte en Excel con la información adicional
     document.getElementById('generar-reporte').addEventListener('click', () => {
         const placa = document.getElementById('placa').value;
         const remitente = document.getElementById('remitente').value;
@@ -119,12 +121,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal').style.display = 'none';
     });
 
-    // Abrir la cámara y mostrar el cuadro de enfoque dinámico
+    // Mostrar la cámara y el cuadro de enfoque dinámico
     document.getElementById('btn-abrir-camara').addEventListener('click', function () {
         initializeAudioContext();
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
-        const focusBox = document.getElementById('focus-box');
 
         scannerContainer.style.display = 'block';
         mainContent.style.display = 'none';
@@ -132,10 +133,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             html5QrCode = new Html5Qrcode("scanner-video");
 
-            // Configuración del área de escaneo
             const config = {
                 fps: 15,
-                qrbox: { width: 250, height: 250 }, // Área de escaneo
+                qrbox: { width: 250, height: 250 },
                 disableFlip: true
             };
 
@@ -145,17 +145,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 (decodedText, decodedResult) => {
                     handleBarcodeScan(decodedText);
 
-                    // Reposicionar el cuadro de enfoque en el área del código detectado
+                    // Ajustar el cuadro de enfoque dinámico según la ubicación del código detectado
                     const box = decodedResult.location;
                     if (box) {
-                        const topLeft = box.topLeftCorner;
-                        const bottomRight = box.bottomRightCorner;
-
-                        // Ajustar tamaño y posición del cuadro de enfoque
-                        focusBox.style.width = `${Math.abs(topLeft.x - bottomRight.x)}px`;
-                        focusBox.style.height = `${Math.abs(topLeft.y - bottomRight.y)}px`;
-                        focusBox.style.left = `${topLeft.x}px`;
-                        focusBox.style.top = `${topLeft.y}px`;
+                        focusBox.style.width = `${Math.abs(box.topLeftCorner.x - box.bottomRightCorner.x)}px`;
+                        focusBox.style.height = `${Math.abs(box.topLeftCorner.y - box.bottomRightCorner.y)}px`;
+                        focusBox.style.left = `${box.topLeftCorner.x}px`;
+                        focusBox.style.top = `${box.topLeftCorner.y}px`;
                         focusBox.style.display = 'block';
                     }
                 },
@@ -171,22 +167,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Detener la cámara y ocultar el cuadro de enfoque
+    // Detener la cámara y ocultar el cuadro de enfoque dinámico
     document.getElementById('close-scanner').addEventListener('click', function () {
         const scannerContainer = document.getElementById('scanner-container');
         const mainContent = document.getElementById('main-content');
-        const focusBox = document.getElementById('focus-box');
 
         if (html5QrCode) {
             html5QrCode.stop().then(() => {
-                focusBox.style.display = 'none'; // Ocultar el cuadro de enfoque
+                focusBox.style.display = 'none';
                 scannerContainer.style.display = 'none';
                 mainContent.style.display = 'block';
             }).catch(err => console.error("Error al detener la cámara:", err));
         }
     });
 
-    // Función para manejar el escaneo de códigos de barras
+    // Manejar el escaneo del código de barras
     function handleBarcodeScan(scannedCode) {
         const sanitizedCode = scannedCode.split('-')[0].trim();
         const product = products.find(p => p.codigo_barra === sanitizedCode);
@@ -267,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Actualizar el contador global de unidades escaneadas
+    // Actualizar contador global
     function updateGlobalCounter() {
         const globalCounter = document.getElementById('global-counter');
         const globalCounterScanner = document.getElementById('global-counter-scanner');
