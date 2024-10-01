@@ -161,6 +161,7 @@ button:hover {
     align-items: center;
     z-index: 9999;
     display: flex;
+    overflow: hidden; /* Evitar desbordamiento */
 }
 
 /* Video de la cámara */
@@ -168,6 +169,18 @@ button:hover {
     position: relative;
     border: 3px solid #ffffff;
     border-radius: 10px;
+}
+/* Contenedor del video para ajustar proporciones */
+#scanner-video-container {
+    position: relative;
+    width: 80%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 /* Botón de la cámara */
