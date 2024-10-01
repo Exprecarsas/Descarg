@@ -163,9 +163,11 @@ button:hover {
     display: flex;
 }
 
-/* Video de la cámara */
+/* Contenedor del video */
 #scanner-video {
     position: relative;
+    width: 600px;
+    height: 450px;
     border: 3px solid #ffffff;
     border-radius: 10px;
 }
@@ -200,10 +202,6 @@ button:hover {
     z-index: 10001;
 }
 
-/* Clase para mostrar temporalmente el contenedor */
-.show-result {
-    display: block !important;
-}
 
 /* Ajustes específicos para dispositivos móviles */
 @media (max-width: 768px) {
@@ -246,7 +244,7 @@ button:hover {
         width: 50%;
         margin: auto;
     }
-}
+};
 /* Estilo del cuadro de enfoque */
 .focus-box {
     position: absolute;
@@ -255,7 +253,10 @@ button:hover {
     width: 250px;
     height: 250px;
     transform: translate(-50%, -50%);
-    border: 3px solid rgba(0, 255, 0, 0.8); /* Borde del cuadro */
-    border-radius: 5px; /* Bordes redondeados */
+    border: 4px dashed #00ff00;
     z-index: 1000;
 }
+/* Clase para mostrar temporalmente el contenedor */
+.show-result {
+    display: block !important;
+};
