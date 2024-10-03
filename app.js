@@ -7,13 +7,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let audioContext; // Contexto de audio para generar tonos
     let scanLock = false; // Variable para bloquear el escaneo temporalmente
 
-    const focusBox = document.getElementById("focus-box"); // Cuadro de enfoque dinámico
-
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            console.log("Contexto de audio inicializado.");
         }
     }
 
@@ -48,7 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     products = results.data.map(item => ({
                         codigo_barra: item['codigo_barra'].trim(),
                         cantidad: parseInt(item['cantidad'].trim()),
-                        ciudad: item['ciudad'].trim()
+                        ciudad: item['ciudad'].trim(),
+                        codigos_validos: [
+                            item['codigo_barra'].trim(),
+                            ...item['codigos_adicionales'] ? item['codigos_adicionales'].split(',').map(code => code.trim()) : []
+                        ].filter(code => code.length > 0), // Agregar los códigos adicionales si existen
+                        scannedSubcodes: [], // Almacenar los subcódigos escaneados para cada producto
+                        noSufijoCount: 0 // Contador de escaneos sin sufijos
                     }));
 
                     scannedUnits = {};
@@ -60,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     updateScannedList();
                     updateGlobalCounter();
+
+                    // Deshabilitar el botón de carga del CSV y cambiar su estilo
+                    document.getElementById('load-csv').disabled = true;
+                    document.getElementById('load-csv').style.backgroundColor = '#cccccc';
+                    document.getElementById('load-csv').style.cursor = 'not-allowed';
                 },
                 error: function (error) {
                     alert("Error al leer el archivo CSV: " + error.message);
@@ -91,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal').style.display = 'none';
     });
 
-    // Generar reporte en Excel con formato de "X / Y" para las unidades escaneadas
+    // Generar reporte en Excel con sufijos escaneados y faltantes solo si faltan
     document.getElementById('generar-reporte').addEventListener('click', () => {
         const placa = document.getElementById('placa').value;
         const remitente = document.getElementById('remitente').value;
@@ -107,15 +115,19 @@ document.addEventListener('DOMContentLoaded', function () {
             ['Remitente', remitente],
             ['Fecha de Descargue', fecha],
             [],
-            ['Código de Barra', 'Unidades Escaneadas (Escaneadas/Total)', 'Ciudad']
+            ['Código de Barra', 'Unidades Escaneadas (Escaneadas/Total)', 'Ciudad', 'Sufijos Escaneados', 'Sufijos Faltantes']
         ];
 
         products.forEach(product => {
             const unidadesEscaneadas = scannedUnits[product.codigo_barra] || 0;
+            const sufijosFaltantes = getMissingSubcodes(product);
+
             reportData.push([
                 product.codigo_barra,
                 `${unidadesEscaneadas} / ${product.cantidad}`, // Mostrar el formato "X / Y"
-                product.ciudad
+                product.ciudad,
+                product.scannedSubcodes.length > 0 ? product.scannedSubcodes.join(', ') : 'Ninguno',
+                sufijosFaltantes.length > 0 ? sufijosFaltantes.join(', ') : '' // Mostrar solo si faltan
             ]);
         });
 
@@ -128,108 +140,64 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal').style.display = 'none';
     });
 
-    // Mostrar la cámara y el cuadro de enfoque dinámico
-    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
-        initializeAudioContext();
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
-
-        scannerContainer.style.display = 'block';
-        mainContent.style.display = 'none';
-
-        try {
-            html5QrCode = new Html5Qrcode("scanner-video");
-
-            const config = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                disableFlip: true
-            };
-
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText, decodedResult) => {
-                    if (!scanLock) { // Verificar si el bloqueo está desactivado
-                        handleBarcodeScan(decodedText);
-
-                        // Activar bloqueo de escaneo temporalmente (5 segundos)
-                        scanLock = true;
-                        setTimeout(() => {
-                            scanLock = false; // Desbloquear escaneo después de 5 segundos
-                        }, 5000);
-                    }
-                },
-                (errorMessage) => console.log(`Error de escaneo: ${errorMessage}`)
-            ).then(() => {
-                console.log("Cámara iniciada correctamente.");
-            }).catch((err) => {
-                console.error("Error al iniciar la cámara:", err);
-                alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
-            });
-        } catch (e) {
-            console.error("Error al crear Html5Qrcode:", e);
+    // Obtener subcódigos faltantes para un producto dado
+    function getMissingSubcodes(product) {
+        if (scannedUnits[product.codigo_barra] === product.cantidad) {
+            return []; // Si el número de unidades escaneadas coincide con la cantidad total, no hay faltantes
         }
-    });
+        const expectedSubcodes = Array.from({ length: product.cantidad }, (_, i) => (i + 1).toString());
+        return expectedSubcodes.filter(subCode => !product.scannedSubcodes.includes(subCode));
+    }
 
-    // Detener la cámara y ocultar el cuadro de enfoque dinámico
-    document.getElementById('close-scanner').addEventListener('click', function () {
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
-
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                focusBox.style.display = 'none';
-                scannerContainer.style.display = 'none';
-                mainContent.style.display = 'block';
-            }).catch(err => console.error("Error al detener la cámara:", err));
-        }
-    });
-
-    // Manejar el escaneo del código de barras (desde la cámara o entrada manual)
+    // Función para manejar el escaneo de códigos
     function handleBarcodeScan(scannedCode) {
-        const sanitizedCode = scannedCode.split('-')[0].trim();
-        const product = products.find(p => p.codigo_barra === sanitizedCode);
+        const parts = scannedCode.split('-');
+        const sanitizedCode = parts[0].trim(); // Parte principal del código
+        const subCode = parts[1] || ''; // Obtener el subcódigo si existe
+
+        const product = products.find(p => p.codigos_validos.includes(sanitizedCode));
 
         if (product) {
             const currentScanned = scannedUnits[product.codigo_barra] || 0;
-            if (currentScanned < product.cantidad) {
-                scannedUnits[product.codigo_barra] = currentScanned + 1;
-                globalUnitsScanned += 1;
-
-                playTone(440, 200, 'sine'); // Tono de éxito
-                showTemporaryResult(true); // Mostrar resultado de éxito visualmente
-                updateScannedList(product.codigo_barra);
-                updateGlobalCounter();
+            if (currentScanned >= product.cantidad) {
+                alert(`El producto ${sanitizedCode} ya ha alcanzado la cantidad total (${product.cantidad}) de unidades escaneadas.`);
+                playTone(220, 500, 'square');
+                clearBarcodeInput();
+                return;
             }
+
+            // Validación con subcódigos
+            if (subCode === '' || product.cantidad === 1) {
+                if (product.noSufijoCount < product.cantidad) {
+                    product.noSufijoCount += 1;
+                    scannedUnits[product.codigo_barra] += 1;
+                    globalUnitsScanned += 1;
+                    playTone(440, 200, 'sine'); // Tono de éxito
+                } else {
+                    alert(`El código ${sanitizedCode} ya ha sido escaneado todas las veces requeridas (${product.cantidad}).`);
+                    playTone(220, 500, 'square');
+                }
+            } else {
+                if (!product.scannedSubcodes.includes(subCode)) {
+                    product.scannedSubcodes.push(subCode);
+                    scannedUnits[product.codigo_barra] += 1;
+                    globalUnitsScanned += 1;
+                    playTone(440, 200, 'sine');
+                } else {
+                    alert(`El subcódigo -${subCode} de ${sanitizedCode} ya ha sido escaneado.`);
+                    playTone(220, 500, 'square');
+                }
+            }
+            updateScannedList(product.codigo_barra);
+            updateGlobalCounter();
         } else {
-            playTone(220, 500, 'square'); // Tono de error
-            showTemporaryResult(false); // Mostrar resultado de error visualmente
+            playTone(220, 500, 'square');
             alert("El código escaneado no coincide con ningún producto.");
         }
-        document.getElementById('barcodeInput').value = '';
+        clearBarcodeInput();
     }
 
-    // Mostrar resultado temporalmente (verde para éxito, rojo para error)
-    function showTemporaryResult(isSuccess) {
-        const scanResultContainer = document.getElementById('scan-result');
-        const resultIcon = document.getElementById('result-icon');
-
-        if (isSuccess) {
-            resultIcon.innerHTML = '&#10004;';
-            scanResultContainer.style.backgroundColor = 'rgba(0, 255, 0, 0.8)';
-        } else {
-            resultIcon.innerHTML = '&#10006;';
-            scanResultContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
-        }
-
-        scanResultContainer.classList.add('show-result');
-        setTimeout(() => {
-            scanResultContainer.classList.remove('show-result');
-        }, 3000);
-    }
-
-    // Actualizar la lista de unidades escaneadas
+    // Funciones de visualización de lista y progreso
     function updateScannedList(scannedCode = '') {
         const scannedList = document.getElementById('scanned-list');
         scannedList.innerHTML = '';
@@ -253,11 +221,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusClass = 'status-incomplete';
             }
 
+            const additionalCodes = product.codigos_validos.join(', ');
+            const scannedSubcodes = product.scannedSubcodes.join(', ');
+            const noSufijoCount = product.noSufijoCount;
+
             const li = document.createElement('li');
             li.className = statusClass;
             li.innerHTML = `
-                <span>Código: ${product.codigo_barra}</span>
-                <span class="city">Ciudad: ${product.ciudad}</span>
+                <span><strong>Código Principal:</strong> ${product.codigo_barra}</span><br>
+                <span><strong>Códigos Adicionales:</strong> ${additionalCodes}</span><br>
+                <span><strong>Subcódigos Escaneados:</strong> ${scannedSubcodes} ${noSufijoCount > 0 ? `(Sin Sufijo: ${noSufijoCount})` : ''}</span><br>
+                <span class="city"><strong>Ciudad:</strong> ${product.ciudad}</span>
                 <div class="progress-bar">
                     <div class="progress-bar-inner" style="width: ${progressWidth}%"></div>
                 </div>
@@ -267,11 +241,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Actualizar contador global
+    // Actualizar el contador global
     function updateGlobalCounter() {
         const globalCounter = document.getElementById('global-counter');
-        const globalCounterScanner = document.getElementById('global-counter-scanner');
         globalCounter.innerText = `Unidades descargadas: ${globalUnitsScanned} de ${totalUnits}`;
-        globalCounterScanner.innerText = `Unidades descargadas: ${globalUnitsScanned} de ${totalUnits}`;
+    }
+
+    // Limpiar el campo de código de barras
+    function clearBarcodeInput() {
+        document.getElementById('barcodeInput').value = '';
     }
 });
