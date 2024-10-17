@@ -457,4 +457,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return expectedSubcodes.filter(subCode => !product.scannedSubcodes.includes(subCode));
     }
 
+    <!-- Tu contenido de la aplicación -->
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/Descarg/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito: ', registration);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker no se pudo registrar: ', error);
+                    });
+            });
+        }
+
 });
