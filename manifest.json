@@ -2,7 +2,7 @@
   "name": "Gestión de Unidades Escaneadas",
   "short_name": "Unidades",
   "description": "Aplicación para la gestión y escaneo de unidades.",
-  "start_url": "/Descarg/index.html",
+  "start_url": "/Descarg/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#cc414d",
