@@ -7,6 +7,8 @@
     <title>Gestión de Unidades Escaneadas</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#cc414d">
 </head>
 
 <body>
@@ -46,7 +48,7 @@
     <button id="finalizar-descarga">Finalizar Descarga</button>
     <button id="terminar-proceso">Terminar Proceso</button>
     </div>
-    
+
 
     <!-- Contenedor del escáner de códigos de barras -->
     <div id="scanner-container" style="display: none;">
@@ -87,6 +89,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="app.js"></script>
+    <!-- Tu contenido de la aplicación -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/Descarg/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito: ', registration);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker no se pudo registrar: ', error);
+                    });
+            });
+        }
+    </script>
 
 </body>
 
