@@ -131,33 +131,48 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 function startScanner() {
-    if (!videoPlaying) {  // Check if the video is already playing
-        codeReader.listVideoInputDevices()
-            .then((videoInputDevices) => {
-                selectedDeviceId = videoInputDevices[0].deviceId;
-                startBarcodeScanning();
-            })
-            .catch((err) => console.error('Error al listar dispositivos de video:', err));
-    } else {
-        console.log('Video is already playing.');
-    }
+    codeReader.listVideoInputDevices()
+        .then((videoInputDevices) => {
+            selectedDeviceId = videoInputDevices[0].deviceId; // Select first available device
+            
+            startBarco
+startBarcodeScanning();
+        })
+        .catch((err) => console.error('Error listing video devices:', err));
 }
 
-// Start barcode scanning
 function startBarcodeScanning() {
+    if (videoPlaying) {
+        
+        c
+console.log('Video is already playing.');
+        
+     
+return; // Prevent reinitializing the video
+    }
+
+    videoPlaying = true;
     codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
         .then((result) => {
-            console.log(result.text);  // Log the scanned code
-            handleBarcodeScan(result.text);  // Handle the scanned barcode
-            setTimeout(startBarcodeScanning, 1000);  // Restart scanning after a delay
+            console.log(result.text); // Log the scanned barcode
+            videoPlaying = false; // Reset videoPlaying flag after scanning
+            
+            startBarcodeScann
+startBarcodeScanning(); // Continue scanning for the next barcode
         })
-        .catch((err) => console.error('Error scanning:', err));
+        .
+        })
+catch((err) => {
+            console.error('Error during barcode scanning:', err);
+            videoPlaying = false; // Reset flag in case of an error
+        });
 }
 
-            // Initialize scanner on button click
-            document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-                startScanner();
-            });
+document.getElementById('btn-abrir-camara').addEventListener('click', () => {
+    
+    startScann
+startScanner();
+});
 
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
