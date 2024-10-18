@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let scanLock = false; // Variable para bloquear el escaneo temporalmente
     let codigosCorrectos = []; // Códigos que coinciden con los productos
     let codigosIncorrectos = []; // Códigos que no coinciden con los productos
+    let videoPlaying = false;
     let barcodeTimeout; // Variable para almacenar el temporizador
 
     // Inicializar contexto de audio para generar tonos
@@ -129,28 +130,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function startScanner() {
-        codeReader.listVideoInputDevices()
-            .then((videoInputDevices) => {
-                // Pick the first device by default
-                selectedDeviceId = videoInputDevices[0].deviceId;
-                startBarcodeScanning();
-            })
-            .catch((err) => console.error('Error listing video devices:', err));
-    }
+// Start scanner function
+            function startScanner() {
+                codeReader.listVideoInputDevices()
+                    .then((videoInputDevices) => {
+                        selectedDeviceId = videoInputDevices[0].deviceId;
+                        startBarcodeScanning();
+                    })
+                    .catch((err) => console.error('Error al listar dispositivos de video:', err));
+            }
 
-    function startBarcodeScanning() {
-        codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
-            .then((result) => {
-                console.log(result.text); // This is the scanned barcode
-                startBarcodeScanning(); // Continue scanning
-            })
-            .catch((err) => console.error('Error scanning:', err));
-    }
+            // Start barcode scanning
+            function startBarcodeScanning() {
+                if (videoPlaying) {
+                    console.log('Video is already playing.');
+                    return;
+                }
 
-    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-        startScanner(); // Start the scanner when the button is clicked
-    });
+                videoPlaying = true;
+                codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
+                    .then((result) => {
+                        console.log(result.text); // Log scanned code
+                        videoPlaying = false; // Reset flag
+                        startBarcodeScanning(); // Continue scanning
+                    })
+                    .catch((err) => {
+                        console.error('Error scanning:', err);
+                        videoPlaying = false; // Reset flag on error
+                    });
+            }
+
+            // Initialize scanner on button click
+            document.getElementById('btn-abrir-camara').addEventListener('click', () => {
+                startScanner();
+            });
 
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
