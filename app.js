@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
     let codeReader = new ZXing.BrowserBarcodeReader();
+    let selectedDeviceId;
     let audioContext; // Contexto de audio para generar tonos
     let scanLock = false; // Variable para bloquear el escaneo temporalmente
     let codigosCorrectos = []; // Códigos que coinciden con los productos
     let codigosIncorrectos = []; // Códigos que no coinciden con los productos
     let barcodeTimeout; // Variable para almacenar el temporizador
-    let selectedDeviceId;
 
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
@@ -128,30 +128,28 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-  
-function startScanner() {
+
+    function startScanner() {
         codeReader.listVideoInputDevices()
             .then((videoInputDevices) => {
+                // Pick the first device by default
                 selectedDeviceId = videoInputDevices[0].deviceId;
                 startBarcodeScanning();
             })
-            .catch((err) => console.error('Error al listar dispositivos de video:', err));
+            .catch((err) => console.error('Error listing video devices:', err));
     }
 
     function startBarcodeScanning() {
         codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
             .then((result) => {
-                if (!scanLock) {
-                    handleBarcodeScan(result.text);
-                    scanLock = true;
-                    setTimeout(() => { scanLock = false; }, 3000);
-                }
-                startBarcodeScanning();
+                console.log(result.text); // This is the scanned barcode
+                startBarcodeScanning(); // Continue scanning
             })
-            .catch((err) => console.error('Error al escanear:', err));
+            .catch((err) => console.error('Error scanning:', err));
     }
+
     document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-        startScanner();
+        startScanner(); // Start the scanner when the button is clicked
     });
 
     // Manejar el evento de entrada en el campo de código de barras
