@@ -3,12 +3,13 @@ document.addEventListener('DOMContentLoaded', function () {
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
-    let html5QrCode; // Objeto para manejar el escáner
+    let codeReader = new ZXing.BrowserBarcodeReader();
     let audioContext; // Contexto de audio para generar tonos
     let scanLock = false; // Variable para bloquear el escaneo temporalmente
     let codigosCorrectos = []; // Códigos que coinciden con los productos
     let codigosIncorrectos = []; // Códigos que no coinciden con los productos
     let barcodeTimeout; // Variable para almacenar el temporizador
+    let selectedDeviceId;
 
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
@@ -127,61 +128,31 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-    // Mostrar la cámara y el cuadro de enfoque dinámico
-    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
-        initializeAudioContext();
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
+  
+function startScanner() {
+        codeReader.listVideoInputDevices()
+            .then((videoInputDevices) => {
+                selectedDeviceId = videoInputDevices[0].deviceId;
+                startBarcodeScanning();
+            })
+            .catch((err) => console.error('Error al listar dispositivos de video:', err));
+    }
 
-        scannerContainer.style.display = 'block';
-        mainContent.style.display = 'none';
-
-        try {
-            // Inicializar el objeto Html5Qrcode
-            html5QrCode = new Html5Qrcode("scanner-video");
-
-            const config = {
-                fps: 10, // Reducir el FPS para minimizar repeticiones
-                qrbox: { width: 250, height: 250 },
-                disableFlip: true
-            };
-
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText) => {
-                    if (!scanLock) {
-                        handleBarcodeScan(decodedText);
-
-                        scanLock = true;
-                        setTimeout(() => { scanLock = false; }, 3000);
-                    }
-                },
-                (errorMessage) => console.log(`Error de escaneo: ${errorMessage}`)
-            ).then(() => {
-                console.log("Cámara iniciada correctamente.");
-            }).catch((err) => {
-                console.error("Error al iniciar la cámara:", err);
-                alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
-            });
-        } catch (e) {
-            console.error("Error al crear Html5Qrcode:", e);
-        }
+    function startBarcodeScanning() {
+        codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
+            .then((result) => {
+                if (!scanLock) {
+                    handleBarcodeScan(result.text);
+                    scanLock = true;
+                    setTimeout(() => { scanLock = false; }, 3000);
+                }
+                startBarcodeScanning();
+            })
+            .catch((err) => console.error('Error al escanear:', err));
+    }
+    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
+        startScanner();
     });
-
-    // Detener la cámara y ocultar el cuadro de enfoque dinámico
-    document.getElementById('close-scanner').addEventListener('click', function () {
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
-
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                scannerContainer.style.display = 'none';
-                mainContent.style.display = 'block';
-            }).catch(err => console.error("Error al detener la cámara:", err));
-        }
-    });
-
 
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
