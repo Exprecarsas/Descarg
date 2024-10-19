@@ -130,51 +130,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
+// Start the scanner when the camera button is clicked
     document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-    if (codeReader) {
-        codeReader.reset(); // Stop any existing video stream
-    }
-    startScanner();
-});
+        startScanner();
+    });
 
-function startScanner() {
-    codeReader.listVideoInputDevices().then((videoInputDevices) => {
-        selectedDeviceId = videoInputDevices[0].deviceId;
-        if (!videoPlaying) {
-            codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
-                .then((result) => {
-                    console.log(result.text);
-                    videoPlaying = false; // Reset after scanning
-                    startBarcodeScanning(); // Continue scanning
-                })
-                .catch((err) => {
-                    console.error('Error scanning:', err);
-                    videoPlaying = false; // Reset in case of error
-                });
-            videoPlaying = true; // Mark video as playing
-        } else {
-            console.warn("Video is already playing.");
-        }
-    }).catch((err) => console.error('Error listing video devices:', err));
-}
-
-    function startBarcodeScanning() {
+    // Start the scanner function
+    function startScanner() {
+        // Reset the scanner if it was already active
         if (videoPlaying) {
-            console.warn('Video is already playing.');
-            return; 
+            console.warn("Video is already playing.");
+            return;
         }
 
-        videoPlaying = true;
-        codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
-            .then((result) => {
-                console.log(result.text); 
-                videoPlaying = false; 
-                startBarcodeScanning(); 
-            })
-            .catch((err) => {
-                console.error('Error al escanear:', err);
-                videoPlaying = false;
+        codeReader.listVideoInputDevices().then((videoInputDevices) => {
+            selectedDeviceId = videoInputDevices[0].deviceId;
+
+            // Try to initialize the video stream for the scanner
+            codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
+                if (result) {
+                    handleBarcodeScan(result.text);
+                    videoPlaying = true;
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error('Error while scanning:', err);
+                }
             });
+
+        }).catch((err) => {
+            console.error('Error listing video devices:', err);
+        });
+    }
+
+    // Handle barcode scan
+    function handleBarcodeScan(scannedCode) {
+        console.log("Scanned code:", scannedCode);
+        // Additional logic for handling the scanned code goes here
+    }
+
+    // Stop the scanner and reset the video when closing the scanner
+    document.getElementById('close-scanner').addEventListener('click', () => {
+        codeReader.reset(); // Stop the video stream
+        videoPlaying = false;
+        document.getElementById('scanner-container').style.display = 'none';
+    });
    
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
