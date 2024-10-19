@@ -139,7 +139,13 @@ function startScanner() {
         codeReader.listVideoInputDevices().then((videoInputDevices) => {
             selectedDeviceId = videoInputDevices[0].deviceId;
 
-            // Start scanning the video
+            // Start scanning with the rear-facing camera
+            const config = {
+                video: {
+                    facingMode: { exact: "environment" } // Force using the rear camera
+                }
+            };
+
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
                 if (result) {
                     console.log("Scanned result:", result.text);
