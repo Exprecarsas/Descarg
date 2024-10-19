@@ -453,5 +453,4 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     }
-
 });
