@@ -130,49 +130,44 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
-// Start the scanner when the camera button is clicked
-    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-        startScanner();
-    });
-
-    // Start the scanner function
-    function startScanner() {
-        // Reset the scanner if it was already active
+function startScanner() {
         if (videoPlaying) {
             console.warn("Video is already playing.");
-            return;
+            return; // Prevent starting again if already playing
         }
 
         codeReader.listVideoInputDevices().then((videoInputDevices) => {
             selectedDeviceId = videoInputDevices[0].deviceId;
 
-            // Try to initialize the video stream for the scanner
+            // Start scanning the video
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
                 if (result) {
-                    handleBarcodeScan(result.text);
-                    videoPlaying = true;
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error('Error while scanning:', err);
+                    console.log("Scanned result:", result.text);
+                } else if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
                 }
             });
 
+            videoPlaying = true;
+
+            // Show the scanner container when the camera starts
+            document.getElementById('scanner-container').style.display = 'block';
+            document.getElementById('main-content').style.display = 'none';
         }).catch((err) => {
             console.error('Error listing video devices:', err);
         });
     }
 
-    // Handle barcode scan
-    function handleBarcodeScan(scannedCode) {
-        console.log("Scanned code:", scannedCode);
-        // Additional logic for handling the scanned code goes here
-    }
+    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
+        startScanner();
+    });
 
-    // Stop the scanner and reset the video when closing the scanner
+    // Stop the video and reset when the close button is clicked
     document.getElementById('close-scanner').addEventListener('click', () => {
-        codeReader.reset(); // Stop the video stream
+        codeReader.reset();
         videoPlaying = false;
         document.getElementById('scanner-container').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
     });
    
     // Manejar el evento de entrada en el campo de código de barras
