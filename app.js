@@ -130,21 +130,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
-function startScanner() {
+    function startScanner() {
         if (videoPlaying) {
             console.warn("Video is already playing.");
-            return; // Prevent starting again if already playing
+            return;
         }
 
         codeReader.listVideoInputDevices().then((videoInputDevices) => {
-            selectedDeviceId = videoInputDevices[0].deviceId;
-
-            // Start scanning with the rear-facing camera
-            const config = {
-                video: {
-                    facingMode: { exact: "environment" } // Force using the rear camera
-                }
-            };
+            // Buscar un dispositivo con la cámara trasera
+            const rearCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back'));
+            const selectedDeviceId = rearCamera ? rearCamera.deviceId : videoInputDevices[0].deviceId;
 
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
                 if (result) {
@@ -155,8 +150,6 @@ function startScanner() {
             });
 
             videoPlaying = true;
-
-            // Show the scanner container when the camera starts
             document.getElementById('scanner-container').style.display = 'block';
             document.getElementById('main-content').style.display = 'none';
         }).catch((err) => {
@@ -168,7 +161,6 @@ function startScanner() {
         startScanner();
     });
 
-    // Stop the video and reset when the close button is clicked
     document.getElementById('close-scanner').addEventListener('click', () => {
         codeReader.reset();
         videoPlaying = false;
