@@ -1,4 +1,5 @@
-   let products = []; // Lista de productos cargados desde el CSV
+document.addEventListener('DOMContentLoaded', function () {
+    let products = []; // Lista de productos cargados desde el CSV
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
