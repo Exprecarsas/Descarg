@@ -129,12 +129,34 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-    function startScanner() {
-        codeReader.listVideoInputDevices().then((videoInputDevices) => {
-            selectedDeviceId = videoInputDevices[0].deviceId; 
-            startBarcodeScanning();
-        }).catch((err) => console.error('Error al listar dispositivos de video:', err));
+    
+    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
+    if (codeReader) {
+        codeReader.reset(); // Stop any existing video stream
     }
+    startScanner();
+});
+
+function startScanner() {
+    codeReader.listVideoInputDevices().then((videoInputDevices) => {
+        selectedDeviceId = videoInputDevices[0].deviceId;
+        if (!videoPlaying) {
+            codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
+                .then((result) => {
+                    console.log(result.text);
+                    videoPlaying = false; // Reset after scanning
+                    startBarcodeScanning(); // Continue scanning
+                })
+                .catch((err) => {
+                    console.error('Error scanning:', err);
+                    videoPlaying = false; // Reset in case of error
+                });
+            videoPlaying = true; // Mark video as playing
+        } else {
+            console.warn("Video is already playing.");
+        }
+    }).catch((err) => console.error('Error listing video devices:', err));
+}
 
     function startBarcodeScanning() {
         if (videoPlaying) {
@@ -153,16 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error al escanear:', err);
                 videoPlaying = false;
             });
-    }
-
-    document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-        if (!videoPlaying) { 
-            startScanner();
-        } else {
-            console.warn("Video is already playing.");
-        }
-    });
-
+   
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
         const barcodeValue = document.getElementById('barcodeInput').value.trim();
