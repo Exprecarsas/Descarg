@@ -1,12 +1,9 @@
-document.addEventListener('DOMContentLoaded', function () {
-    let products = []; // Lista de productos cargados desde el CSV
+   let products = []; // Lista de productos cargados desde el CSV
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
     let codeReader = new ZXing.BrowserBarcodeReader();
-    let selectedDeviceId;
     let audioContext; // Contexto de audio para generar tonos
-    let scanLock = false; // Variable para bloquear el escaneo temporalmente
     let codigosCorrectos = []; // Códigos que coinciden con los productos
     let codigosIncorrectos = []; // Códigos que no coinciden con los productos
     let videoPlaying = false;
@@ -129,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-    
+
     function startScanner() {
         if (videoPlaying) {
             console.warn("Video is already playing.");
@@ -143,12 +140,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video', (result, err) => {
                 if (result) {
-                    console.log("Scanned result:", result.text);
+                    console.log("Código escaneado:", result.text);
+                    alert("Código escaneado: " + result.text);
                 } else if (err && !(err instanceof ZXing.NotFoundException)) {
-                    console.error(err);
+                    console.error("Error de escaneo:", err);
+                    alert("Error de escaneo: " + err.message);
                 }
             });
-
             videoPlaying = true;
             document.getElementById('scanner-container').style.display = 'block';
             document.getElementById('main-content').style.display = 'none';
@@ -167,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('scanner-container').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
     });
-   
+
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
         const barcodeValue = document.getElementById('barcodeInput').value.trim();
