@@ -129,37 +129,38 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-
     function startScanner() {
-        codeReader.listVideoInputDevices()
-            .then((videoInputDevices) => {
-                selectedDeviceId = videoInputDevices[0].deviceId; // Select first available device
-                startBarcodeScanning();
-            })
-            .catch((err) => console.error('Error listing video devices:', err));
+        codeReader.listVideoInputDevices().then((videoInputDevices) => {
+            selectedDeviceId = videoInputDevices[0].deviceId; 
+            startBarcodeScanning();
+        }).catch((err) => console.error('Error al listar dispositivos de video:', err));
     }
-    
+
     function startBarcodeScanning() {
         if (videoPlaying) {
-            console.log('Video is already playing.');
-            return; // Prevent reinitializing the video
+            console.warn('Video is already playing.');
+            return; 
         }
-    
+
         videoPlaying = true;
         codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'scanner-video')
             .then((result) => {
-                console.log(result.text); // Log the scanned barcode
-                videoPlaying = false; // Reset videoPlaying flag after scanning
-                startBarcodeScanning(); // Continue scanning for the next barcode
+                console.log(result.text); 
+                videoPlaying = false; 
+                startBarcodeScanning(); 
             })
             .catch((err) => {
-                console.error('Error during barcode scanning:', err);
-                videoPlaying = false; // Reset flag in case of an error
+                console.error('Error al escanear:', err);
+                videoPlaying = false;
             });
     }
-    
+
     document.getElementById('btn-abrir-camara').addEventListener('click', () => {
-        startScanner();
+        if (!videoPlaying) { 
+            startScanner();
+        } else {
+            console.warn("Video is already playing.");
+        }
     });
 
     // Manejar el evento de entrada en el campo de código de barras
