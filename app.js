@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     let products = []; // Lista de productos cargados desde el CSV
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
@@ -150,7 +150,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
             const videoElement = document.getElementById('scanner-video');
+            // Asignar el stream al elemento de video
+        if (videoElement) {
             videoElement.srcObject = stream;
+            videoElement.play();  // Iniciar reproducción del video
+        } else {
+            console.error('No se encontró el elemento de video.');
+        }
+    } catch (err) {
+        console.error('Error al acceder a la cámara: ', err);
+        alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
+    }
 
             // Obtener el "track" de video para controlar la linterna
             track = stream.getVideoTracks()[0];
