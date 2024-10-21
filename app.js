@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-    
-// Mostrar la cámara con ZXing y activar cámara trasera
+
+    // Mostrar la cámara con ZXing y activar cámara trasera
     document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
         initializeAudioContext();
         const scannerContainer = document.getElementById('scanner-container');
@@ -143,45 +143,37 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         codeReader = new ZXing.BrowserBarcodeReader();
 
-        // Obtener la cámara trasera del dispositivo
         try {
-    stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } // Cambiar a "environment" sin exact para evitar OverconstrainedError
-    });
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" }
+            });
 
             const videoElement = document.getElementById('scanner-video');
-            // Asignar el stream al elemento de video
-        if (videoElement) {
-            videoElement.srcObject = stream;
-            videoElement.play();  // Iniciar reproducción del video
-        } else {
-            console.error('No se encontró el elemento de video.');
-        }
-    } catch (err) {
-        console.error('Error al acceder a la cámara: ', err);
-        alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
-    }
-
-            // Obtener el "track" de video para controlar la linterna
-            track = stream.getVideoTracks()[0];
-
-            // Escaneo continuo con un intervalo de 3 segundos entre códigos
-            codeReader.decodeFromVideoDevice(undefined, 'scanner-video', (result, err) => {
-                if (result) {
-                    if (!scanLock) {  // Solo permitir escaneo si no está bloqueado
-                        handleBarcodeScan(result.text);
-                        scanLock = true;  // Bloquear nuevos escaneos
-                        setTimeout(() => { scanLock = false; }, scanCooldown);  // Desbloquear después de 3 segundos
-                    }
-                }
-                if (err) {
-                    console.error(err);
-                }
-            });
+            if (videoElement) {
+                videoElement.srcObject = stream;
+                videoElement.play();  // Iniciar reproducción del video
+            } else {
+                console.error('No se encontró el elemento de video.');
+            }
         } catch (err) {
-            console.error("Error al iniciar la cámara trasera:", err);
-            alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
+            console.error('Error al acceder a la cámara: ', err);
+            alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
         }
+
+        track = stream.getVideoTracks()[0];
+
+        codeReader.decodeFromVideoDevice(undefined, 'scanner-video', (result, err) => {
+            if (result) {
+                if (!scanLock) {
+                    handleBarcodeScan(result.text);
+                    scanLock = true;
+                    setTimeout(() => { scanLock = false; }, scanCooldown);
+                }
+            }
+            if (err) {
+                console.error(err);
+            }
+        });
     });
 
     // Encender o apagar la linterna
