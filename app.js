@@ -145,9 +145,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Obtener la cámara trasera del dispositivo
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: { exact: "environment" } } 
-            });
+    stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } // Cambiar a "environment" sin exact para evitar OverconstrainedError
+    });
 
             const videoElement = document.getElementById('scanner-video');
             videoElement.srcObject = stream;
