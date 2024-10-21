@@ -132,33 +132,33 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Mostrar la cámara con ZXing y activar cámara trasera
-    document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
-        initializeAudioContext();
-        const scannerContainer = document.getElementById('scanner-container');
-        const mainContent = document.getElementById('main-content');
+document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
+    const scannerContainer = document.getElementById('scanner-container');
+    const mainContent = document.getElementById('main-content');
 
-        scannerContainer.style.display = 'block';
-        mainContent.style.display = 'none';
+    scannerContainer.style.display = 'block';
+    mainContent.style.display = 'none';
 
-        codeReader = new ZXing.BrowserBarcodeReader();
+    codeReader = new ZXing.BrowserBarcodeReader();
 
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" }
-            });
+    try {
+        // Obtener la cámara trasera del dispositivo
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
 
-            const videoElement = document.getElementById('scanner-video');
-            if (videoElement) {
-                videoElement.srcObject = stream;
-                videoElement.play();  // Iniciar reproducción del video
-            } else {
-                console.error('No se encontró el elemento de video.');
-            }
-        } catch (err) {
-            console.error('Error al acceder a la cámara: ', err);
-            alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
-        }
+        const videoElement = document.getElementById('scanner-video');
+        videoElement.srcObject = stream;
+
+        // Esperar hasta que los metadatos del video estén cargados antes de reproducir
+        videoElement.onloadedmetadata = function() {
+            videoElement.play();  // Reproducir el video solo cuando esté listo
+        };
+
+    } catch (err) {
+        console.error('Error al acceder a la cámara: ', err);
+        alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
+    }
 
         track = stream.getVideoTracks()[0];
 
