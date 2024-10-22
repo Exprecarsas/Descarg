@@ -131,6 +131,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
+    
+console.log(ZXing); // Verificar si ZXing está definido
 
 document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
     const scannerContainer = document.getElementById('scanner-container');
@@ -140,6 +142,8 @@ document.getElementById('btn-abrir-camara').addEventListener('click', async func
     mainContent.style.display = 'none';
 
     codeReader = new ZXing.BrowserBarcodeReader();
+    
+    console.log("Escáner ZXing inicializado");
 
     try {
         // Obtener la cámara trasera del dispositivo
