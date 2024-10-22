@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
     
-console.log(ZXing); // Verificar si ZXing está definido
+
 
 document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
     const scannerContainer = document.getElementById('scanner-container');
@@ -141,7 +141,7 @@ document.getElementById('btn-abrir-camara').addEventListener('click', async func
     scannerContainer.style.display = 'block';
     mainContent.style.display = 'none';
 
-    codeReader = new ZXing.BrowserBarcodeReader();
+    const codeReader = new ZXing.BrowserBarcodeReader();
     
     console.log("Escáner ZXing inicializado");
 
