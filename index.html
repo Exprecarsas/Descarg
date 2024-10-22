@@ -7,6 +7,8 @@
     <title>Gestión de Unidades Escaneadas</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <!-- Incluye la librería de FontAwesome en el head para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#cc414d">
 </head>
@@ -44,8 +46,10 @@
     <h2>Unidades Escaneadas</h2>
     <ul id="scanned-list"></ul>
 
-    <!-- Botón para finalizar descarga -->
-    <button id="finalizar-descarga" class="btn-generar-reporte" style="position: absolute; top: 10px; right: 10px; z-index: 1000;>Descargar Reporte</button>
+    <!-- Botón de generar reporte con icono de descarga -->
+<button id="finalizar-descarga" class="btn-generar-reporte" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+    <i class="fas fa-download"></i> <!-- Ícono de descarga -->
+</button>
     <button id="terminar-proceso">Terminar Proceso</button>
     </div>
 
