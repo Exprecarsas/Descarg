@@ -146,12 +146,12 @@ document.getElementById('btn-abrir-camara').addEventListener('click', async func
 
     try {
         const videoElement = document.getElementById('scanner-video');
-        const selectedDeviceId = (await codeReader.listVideoInputDevices())[0].deviceId; // Seleccionar el primer dispositivo de video
+        const selectedDeviceId = (await codeReader.listVideoInputDevices())[0].deviceId;
 
-        // Inicia la decodificación de códigos de barras o QR desde el dispositivo
+        // Inicia el escáner con la cámara seleccionada
         codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video').then((result) => {
-            console.log(result.text); // Mostrar el resultado en la consola
-            alert('Código escaneado: ' + result.text); // Alerta con el código escaneado
+            console.log('Código escaneado:', result.text);
+            alert('Código escaneado: ' + result.text);
         }).catch((err) => console.error(err));
 
     } catch (err) {
@@ -159,7 +159,6 @@ document.getElementById('btn-abrir-camara').addEventListener('click', async func
         alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
     }
 });
-
 
     // Encender o apagar la linterna
     document.getElementById('btn-toggle-flash').addEventListener('click', function () {
