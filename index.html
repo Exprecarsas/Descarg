@@ -7,7 +7,7 @@
     <title>Gestión de Unidades Escaneadas</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#cc414d">
 </head>
 
@@ -52,10 +52,10 @@
 
     <!-- Contenedor del escáner de códigos de barras -->
     <div id="scanner-container" style="display: none;">
-       <video id="scanner-video" style="width: 100%; height: auto;" autoplay playsinline></video>
+        <div id="scanner-video" style="width: 100%; max-width: 600px; height: 400px;"></div>
         <!-- Contenedor para el cuadro de enfoque dinámico -->
-        <div id="focus-box"></div>        
-        <button id="btn-toggle-flash">Encender/Apagar Linterna</button>
+        <div id="focus-box"></div>
+
         <!-- Botón para cerrar el escáner -->
         <button id="close-scanner" style="position: absolute; top: 10px; right: 10px; z-index: 10000;">
             Cerrar
@@ -84,10 +84,10 @@
     </div>
 
     <!-- Incluye las bibliotecas necesarias -->
-    <!-- loading ZXingBrowser via UNPKG -->
-    <script type="text/javascript" src="https://unpkg.com/@zxing/browser@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <script src="app.js"></script>
     <!-- Tu contenido de la aplicación -->
     <script>

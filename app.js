@@ -1,18 +1,14 @@
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', function () {
     let products = []; // Lista de productos cargados desde el CSV
     let scannedUnits = {}; // Unidades escaneadas por cada producto
     let globalUnitsScanned = 0; // Contador global de unidades escaneadas
     let totalUnits = 0; // Cantidad total de unidades esperadas
+    let html5QrCode; // Objeto para manejar el escáner
     let audioContext; // Contexto de audio para generar tonos
     let scanLock = false; // Variable para bloquear el escaneo temporalmente
     let codigosCorrectos = []; // Códigos que coinciden con los productos
     let codigosIncorrectos = []; // Códigos que no coinciden con los productos
     let barcodeTimeout; // Variable para almacenar el temporizador
-    let codeReader = null; // ZXing code reader object
-    const scanCooldown = 2000; // Tiempo de espera entre cada escaneo (2 segundos)
-    let stream; // Para controlar la cámara
-    let track; // Para acceder al track de video (cámara)
-    let torchEnabled = false; // Estado de la linterna
 
     // Inicializar contexto de audio para generar tonos
     function initializeAudioContext() {
@@ -131,69 +127,61 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert("Por favor, selecciona un archivo CSV.");
         }
     });
-    
+    // Mostrar la cámara y el cuadro de enfoque dinámico
+    document.getElementById('btn-abrir-camara').addEventListener('click', function () {
+        initializeAudioContext();
+        const scannerContainer = document.getElementById('scanner-container');
+        const mainContent = document.getElementById('main-content');
 
-document.getElementById('btn-abrir-camara').addEventListener('click', async function () {
-    const scannerContainer = document.getElementById('scanner-container');
-    const mainContent = document.getElementById('main-content');
+        scannerContainer.style.display = 'block';
+        mainContent.style.display = 'none';
 
-    scannerContainer.style.display = 'block';
-    mainContent.style.display = 'none';
+        try {
+            // Inicializar el objeto Html5Qrcode
+            html5QrCode = new Html5Qrcode("scanner-video");
 
-    // Inicializa el lector de códigos ZXing
-    const codeReader = new ZXing.BrowserBarcodeReader();
-    console.log("Escáner ZXing inicializado");
+            const config = {
+                fps: 10, // Reducir el FPS para minimizar repeticiones
+                qrbox: { width: 250, height: 250 },
+                disableFlip: true
+            };
 
-    try {
-        const videoElement = document.getElementById('scanner-video');
-        const selectedDeviceId = (await codeReader.listVideoInputDevices())[0].deviceId;
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    if (!scanLock) {
+                        handleBarcodeScan(decodedText);
 
-        // Inicia el escáner con la cámara seleccionada
-        codeReader.decodeFromVideoDevice(selectedDeviceId, 'scanner-video').then((result) => {
-            console.log('Código escaneado:', result.text);
-            alert('Código escaneado: ' + result.text);
-        }).catch((err) => console.error(err));
-
-    } catch (err) {
-        console.error('Error al acceder a la cámara:', err);
-        alert("Error al acceder a la cámara. Asegúrate de permitir el acceso.");
-    }
-});
-
-    // Encender o apagar la linterna
-    document.getElementById('btn-toggle-flash').addEventListener('click', function () {
-    const track = stream.getVideoTracks()[0]; // Obtener el "track" de video
-    const capabilities = track.getCapabilities();
-
-    if (capabilities.torch) {
-        const constraints = {
-            advanced: [{ torch: !torchEnabled }] // Cambiar el estado de la linterna
-        };
-        track.applyConstraints(constraints).then(() => {
-            torchEnabled = !torchEnabled;
-            console.log('Linterna encendida:', torchEnabled);
-        }).catch(err => console.error("Error al controlar la linterna:", err));
-    } else {
-        alert("Este dispositivo no soporta control de linterna.");
-    }
-});
+                        scanLock = true;
+                        setTimeout(() => { scanLock = false; }, 3000);
+                    }
+                },
+                (errorMessage) => console.log(`Error de escaneo: ${errorMessage}`)
+            ).then(() => {
+                console.log("Cámara iniciada correctamente.");
+            }).catch((err) => {
+                console.error("Error al iniciar la cámara:", err);
+                alert("Error al iniciar la cámara. Asegúrate de permitir el acceso.");
+            });
+        } catch (e) {
+            console.error("Error al crear Html5Qrcode:", e);
+        }
+    });
 
     // Detener la cámara y ocultar el cuadro de enfoque dinámico
-   document.getElementById('close-scanner').addEventListener('click', function () {
-    const scannerContainer = document.getElementById('scanner-container');
-    const mainContent = document.getElementById('main-content');
+    document.getElementById('close-scanner').addEventListener('click', function () {
+        const scannerContainer = document.getElementById('scanner-container');
+        const mainContent = document.getElementById('main-content');
 
-    if (codeReader) {
-        codeReader.reset().then(() => {
-            scannerContainer.style.display = 'none';
-            mainContent.style.display = 'block';
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                scannerContainer.style.display = 'none';
+                mainContent.style.display = 'block';
+            }).catch(err => console.error("Error al detener la cámara:", err));
+        }
+    });
 
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop()); // Detener la transmisión de video
-            }
-        }).catch(err => console.error("Error al detener la cámara:", err));
-    }
-});
 
     // Manejar el evento de entrada en el campo de código de barras
     document.getElementById('barcodeInput').addEventListener('input', (event) => {
