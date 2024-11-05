@@ -442,7 +442,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const ws = XLSX.utils.aoa_to_sheet(reportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Descargue');
-        XLSX.writeFile(wb, `reporte_descargue_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    // Reemplazar espacios y caracteres especiales en el nombre de archivo
+        const remitenteCleaned = remitente.replace(/[^a-zA-Z0-9]/g, '_');
+        const fechaCleaned = fecha.replace(/\//g, '-'); // Cambiar / por - en la fecha
+
+    // Nombre de archivo personalizado con remitente y fecha
+        const fileName = `reporte_${remitenteCleaned}_${fechaCleaned}.xlsx`;
+
+        XLSX.writeFile(wb, fileName);
 
         alert('Reporte generado correctamente.');
         document.getElementById('modal').style.display = 'none';
