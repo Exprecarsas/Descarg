@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Generar reporte en Excel con sufijos escaneados y faltantes solo si faltan
     document.getElementById('generar-reporte').addEventListener('click', () => {
         const placa = document.getElementById('placa').value;
-        const remitente = document.getElementById('remitente').value;
+        const remitente = document.getElementById('remitente').value.trim();
         const fecha = document.getElementById('fecha').value;
 
         if (!placa || !remitente) {
@@ -442,13 +442,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const ws = XLSX.utils.aoa_to_sheet(reportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Descargue');
-    // Reemplazar espacios y caracteres especiales en el nombre de archivo
-        const remitenteCleaned = remitente.replace(/[^a-zA-Z0-9]/g, '_');
-        const fechaCleaned = fecha.replace(/\//g, '-'); // Cambiar / por - en la fecha
-
-    // Nombre de archivo personalizado con remitente y fecha
-        const fileName = `reporte_${remitenteCleaned}_${fechaCleaned}.xlsx`;
-
+    // Guardar el archivo con el nombre del remitente y la fecha
+        const fileName = `reporte_${remitente}_${new Date().toISOString().slice(0, 10)}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
         alert('Reporte generado correctamente.');
