@@ -25,12 +25,19 @@
         </div>
         <div>
             <h1>Escaneo de Unidades</h1>
+            <h3 id="cliente-cargado" style="margin-top: 10px; color: #2c3e50;"></h3>
             <h2 id="global-counter">Unidades descargadas: 0 de 0 </h2>
         </div>
     </div>
-    <!-- Input para subir archivo CSV -->
-    <input type="file" id="csvFileInput" accept=".csv">
-    <button id="load-csv">Cargar CSV</button><br>
+    <select id="archivo-select">
+        <option value="">Selecciona cliente</option>
+        <option value="1DY82Dx49ehXjKZIjaqOguDmw2RdStrn5FYWKMhKOpcs">operlog</option>
+        <option value="1ABlzwMok8OtUalC8XHTFL23EuQqTnC0OmQF9IRMpWWc">operlog tercero</option>
+        <option value="1dPcvhtF0CcS_PbkmMu89FYvi0kq6u69NAxvxnRZhPD4">transprensa</option>
+        <option value="1EYco4I9lTHovBDaYUk8iZjKWbdbfLqFCOPPWa9a09Bo">tercero</option>
+    </select>
+    <button id="cargar-desde-drive">Cargar desde Drive</button>
+
 
     <!-- Campo de entrada para escanear código de barras -->
     <input type="text" id="barcodeInput" placeholder="Escanea el código de barras aquí...">
@@ -47,9 +54,10 @@
     <ul id="scanned-list"></ul>
 
     <!-- Botón de generar reporte con icono de descarga -->
-<button id="finalizar-descarga" class="btn-generar-reporte" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">  Descargar
-    <i class="fas fa-download"></i> <!-- Ícono de descarga -->
-</button>
+    <button id="finalizar-descarga" class="btn-generar-reporte"
+        style="position: absolute; top: 10px; right: 10px; z-index: 1000;"> Descargar
+        <i class="fas fa-download"></i> <!-- Ícono de descarga -->
+    </button>
     <button id="terminar-proceso">Terminar Proceso</button>
     </div>
 
@@ -81,7 +89,8 @@
             <input type="text" id="placa" placeholder="Placa de Vehículo">
             <input type="text" id="remitente" placeholder="Remitente">
             <input type="text" id="fecha" disabled>
-            <button id="generar-reporte" style="background-color: #4CAF50; color: white; margin-top: 10px;"> Generar Reporte 
+            <button id="generar-reporte" style="background-color: #4CAF50; color: white; margin-top: 10px;"> Generar
+                Reporte
                 <i class="fas fa-file-excel"></i>
             </button>
             <button id="cerrar-modal" style="background-color: #cc414d; color: white; margin-top: 10px;">Cerrar</button>

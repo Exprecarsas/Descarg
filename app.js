@@ -79,54 +79,66 @@ document.addEventListener('DOMContentLoaded', function () {
     // Llamar a esta función al cargar la página
     restoreProgressFromLocalStorage();
 
-    // Cargar archivo CSV y extraer productos
-    document.getElementById('load-csv').addEventListener('click', () => {
-        const fileInput = document.getElementById('csvFileInput');
-        const file = fileInput.files[0];
-
-        if (file) {
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function (results) {
-                    products = results.data.map(item => ({
-                        codigo_barra: item['codigo_barra'].trim(),
-                        cantidad: parseInt(item['cantidad'].trim()),
-                        ciudad: item['ciudad'].trim(),
-                        codigos_validos: [
-                            item['codigo_barra'].trim(),
-                            ...item['codigos_adicionales'] ? item['codigos_adicionales'].split(',').map(code => code.trim()) : []
-                        ].filter(code => code.length > 0), // Agregar los códigos adicionales si existen
-                        scannedSubcodes: [], // Almacenar los subcódigos escaneados para cada producto
-                        noSufijoCount: 0 // Contador de escaneos sin sufijos
-                    }));
-
-                    scannedUnits = {};
-                    globalUnitsScanned = 0;
-                    totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);
-                    products.forEach(product => {
-                        scannedUnits[product.codigo_barra] = 0;
-                    });
-
-                    updateScannedList();
-                    updateGlobalCounter();
-
-                    // Guardar el progreso inicial
-                    saveProgressToLocalStorage();
-
-                    // Deshabilitar el botón de carga del CSV y cambiar su estilo
-                    document.getElementById('load-csv').disabled = true;
-                    document.getElementById('load-csv').style.backgroundColor = '#cccccc';
-                    document.getElementById('load-csv').style.cursor = 'not-allowed';
-                },
-                error: function (error) {
-                    alert("Error al leer el archivo CSV: " + error.message);
-                }
-            });
-        } else {
-            alert("Por favor, selecciona un archivo CSV.");
+    // Cargar archivo desde drive
+    document.getElementById('cargar-desde-drive').addEventListener('click', () => {
+        const fileId = document.getElementById('archivo-select').value;
+        if (!fileId) {
+            alert("Selecciona un cliente para cargar su archivo.");
+            return;
         }
+
+        const exportUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv`;
+
+        fetch(exportUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("No se pudo acceder al archivo desde Drive.");
+                return response.text();
+            })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function (results) {
+                        // Procesa aquí los datos como lo haces normalmente
+                        products = results.data.map(item => ({
+                            codigo_barra: item['codigo_barra'].trim(),
+                            cantidad: parseInt(item['cantidad'].trim()),
+                            ciudad: item['ciudad'].trim(),
+                            codigos_validos: [
+                                item['codigo_barra'].trim(),
+                                ...(item['codigos_adicionales'] ? item['codigos_adicionales'].split(',').map(code => code.trim()) : [])
+                            ].filter(code => code.length > 0),
+                            scannedSubcodes: [],
+                            noSufijoCount: 0
+                        }));
+
+                        scannedUnits = {};
+                        globalUnitsScanned = 0;
+                        totalUnits = products.reduce((acc, product) => acc + product.cantidad, 0);
+                        products.forEach(product => {
+                            scannedUnits[product.codigo_barra] = 0;
+                        });
+
+                        updateScannedList();
+                        updateGlobalCounter();
+                        saveProgressToLocalStorage();
+
+                        document.getElementById('archivo-select').disabled = true;
+                        document.getElementById('cargar-desde-drive').disabled = true;
+       // Mostrar el nombre del cliente cargado en pantalla
+const selectedOption = document.getElementById('archivo-select').selectedOptions[0];
+document.getElementById('cliente-cargado').innerText = `📦 Cliente cargado: ${selectedOption.text}`;
+                 
+
+                        alert("Archivo cargado correctamente.");
+                    }
+                });
+            })
+            .catch(error => {
+                alert("Error al cargar el archivo: " + error.message);
+            });
     });
+
     // Mostrar la cámara y el cuadro de enfoque dinámico
     document.getElementById('btn-abrir-camara').addEventListener('click', function () {
         initializeAudioContext();
@@ -310,23 +322,30 @@ document.addEventListener('DOMContentLoaded', function () {
             scannedUnits = {};
             globalUnitsScanned = 0;
             totalUnits = 0;
-            codigosCorrectos = []; // Vaciar los códigos correctos
-            codigosIncorrectos = []; // Vaciar los códigos incorrectos
+            codigosCorrectos = [];
+            codigosIncorrectos = [];
+
+            // Reactivar y limpiar selector
+        const selector = document.getElementById('archivo-select');
+        selector.disabled = false;
+        selector.value = "";
+        document.getElementById('cargar-desde-drive').disabled = false;
+
+        // 🧹 Limpiar nombre del cliente cargado en pantalla
+        document.getElementById('cliente-cargado').innerText = '';
 
             // Actualizar la interfaz de usuario
             updateScannedList();
             updateGlobalCounter();
 
-            // Guardar el estado limpio en localStorage (opcional si quieres guardar el estado vacío)
+            // Guardar el estado limpio
             saveProgressToLocalStorage();
 
             alert('Proceso finalizado. Los datos se han eliminado.');
         } else {
-            // Si el usuario cancela, no hacer nada
             console.log('El usuario canceló la finalización del proceso.');
         }
     });
-
 
     // Mostrar resultado temporalmente (verde para éxito, rojo para error)
     function showTemporaryResult(isSuccess) {
@@ -442,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const ws = XLSX.utils.aoa_to_sheet(reportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Reporte Descargue');
-    // Guardar el archivo con el nombre del remitente y la fecha
+        // Guardar el archivo con el nombre del remitente y la fecha
         const fileName = `reporte_${remitente}_${new Date().toISOString().slice(0, 10)}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
