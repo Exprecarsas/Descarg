@@ -125,10 +125,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         document.getElementById('archivo-select').disabled = true;
                         document.getElementById('cargar-desde-drive').disabled = true;
-       // Mostrar el nombre del cliente cargado en pantalla
-const selectedOption = document.getElementById('archivo-select').selectedOptions[0];
-document.getElementById('cliente-cargado').innerText = `📦 Cliente cargado: ${selectedOption.text}`;
-                 
+                        // Mostrar el nombre del cliente cargado en pantalla
+                        const selectedOption = document.getElementById('archivo-select').selectedOptions[0];
+                        document.getElementById('cliente-cargado').innerText = `📦 Cliente cargado: ${selectedOption.text}`;
+
 
                         alert("Archivo cargado correctamente.");
                     }
@@ -326,13 +326,13 @@ document.getElementById('cliente-cargado').innerText = `📦 Cliente cargado: ${
             codigosIncorrectos = [];
 
             // Reactivar y limpiar selector
-        const selector = document.getElementById('archivo-select');
-        selector.disabled = false;
-        selector.value = "";
-        document.getElementById('cargar-desde-drive').disabled = false;
+            const selector = document.getElementById('archivo-select');
+            selector.disabled = false;
+            selector.value = "";
+            document.getElementById('cargar-desde-drive').disabled = false;
 
-        // 🧹 Limpiar nombre del cliente cargado en pantalla
-        document.getElementById('cliente-cargado').innerText = '';
+            // 🧹 Limpiar nombre del cliente cargado en pantalla
+            document.getElementById('cliente-cargado').innerText = '';
 
             // Actualizar la interfaz de usuario
             updateScannedList();
