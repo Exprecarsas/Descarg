@@ -125,9 +125,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         document.getElementById('archivo-select').disabled = true;
                         document.getElementById('cargar-desde-drive').disabled = true;
-                        // Mostrar el nombre del cliente cargado en pantalla
+                        // Mostrar cliente cargado con estilo
                         const selectedOption = document.getElementById('archivo-select').selectedOptions[0];
-                        document.getElementById('cliente-cargado').innerText = `📦 Cliente cargado: ${selectedOption.text}`;
+                        const contenedorCliente = document.getElementById('cliente-cargado');
+                        contenedorCliente.innerText = `📦 Cliente cargado: ${selectedOption.text}`;
+                        contenedorCliente.style.display = 'block';
+
 
 
                         alert("Archivo cargado correctamente.");
@@ -332,7 +335,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('cargar-desde-drive').disabled = false;
 
             // 🧹 Limpiar nombre del cliente cargado en pantalla
-            document.getElementById('cliente-cargado').innerText = '';
+            const contenedorCliente = document.getElementById('cliente-cargado');
+            contenedorCliente.innerText = '';
+            contenedorCliente.style.display = 'none';
+
 
             // Actualizar la interfaz de usuario
             updateScannedList();

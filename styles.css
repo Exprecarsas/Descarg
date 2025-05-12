@@ -7,7 +7,8 @@ body {
 }
 
 /* Ajuste general de botones y campos de entrada */
-button, input {
+button,
+input {
     padding: 10px;
     font-size: 16px;
     margin: 10px 0;
@@ -27,12 +28,37 @@ button:hover {
     background-color: #b33a40;
 }
 
+#archivo-select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+#archivo-select:focus {
+    border-color: #cc414d;
+    box-shadow: 0 0 0 3px rgba(204, 65, 77, 0.2);
+    outline: none;
+    background-color: #fff;
+}
+
 /* Contenedor de la lista de productos escaneados */
 #scanned-list {
-    display: flex; /* Flexbox para alineación */
-    flex-wrap: wrap; /* Permitir que los elementos se ajusten */
-    justify-content: center; /* Centrar los elementos */
-    gap: 15px; /* Espacio entre los elementos */
+    display: flex;
+    /* Flexbox para alineación */
+    flex-wrap: wrap;
+    /* Permitir que los elementos se ajusten */
+    justify-content: center;
+    /* Centrar los elementos */
+    gap: 15px;
+    /* Espacio entre los elementos */
     padding: 10px;
 }
 
@@ -43,28 +69,36 @@ button:hover {
     border-radius: 8px;
     color: #ffffff;
     text-align: center;
-    min-width: 280px; /* Ancho mínimo */
-    max-width: 320px; /* Ancho máximo */
-    word-wrap: break-word; /* Ajustar texto largo */
+    min-width: 280px;
+    /* Ancho mínimo */
+    max-width: 320px;
+    /* Ancho máximo */
+    word-wrap: break-word;
+    /* Ajustar texto largo */
     margin: 10px 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
-    transition: background-color 0.5s ease; /* Transición suave para los colores */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    /* Sombra */
+    transition: background-color 0.5s ease;
+    /* Transición suave para los colores */
 }
 
 /* Colores para diferentes estados */
 .status-complete {
-    background-color: #4CAF50; /* Verde si está completo */
+    background-color: #4CAF50;
+    /* Verde si está completo */
 }
 
 .status-warning {
-    background-color: #FFC107; /* Amarillo si está en progreso */
+    background-color: #FFC107;
+    /* Amarillo si está en progreso */
 }
 
 .status-incomplete {
-    background-color: #cc414d; /* Rojo si no está escaneado */
+    background-color: #cc414d;
+    /* Rojo si no está escaneado */
 }
 
 /* Barra de progreso */
@@ -133,7 +167,8 @@ button:hover {
 }
 
 /* Barra de estado para contadores globales */
-#global-counter, #global-counter-scanner {
+#global-counter,
+#global-counter-scanner {
     background-color: #cc414d;
     color: white;
     padding: 10px 20px;
@@ -160,7 +195,8 @@ button:hover {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    display: none; /* Se muestra solo cuando se activa */
+    display: none;
+    /* Se muestra solo cuando se activa */
 }
 
 /* Video de la cámara */
@@ -171,6 +207,7 @@ button:hover {
     border: 3px solid #ffffff;
     border-radius: 10px;
 }
+
 /* Cuadro de enfoque dinámico */
 #focus-box {
     position: absolute;
@@ -178,11 +215,13 @@ button:hover {
     width: 250px;
     height: 250px;
     box-sizing: border-box;
-    pointer-events: none; /* Para que no interfiera con el video */
+    pointer-events: none;
+    /* Para que no interfiera con el video */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 10000; /* Asegura que esté sobre el video */
+    z-index: 10000;
+    /* Asegura que esté sobre el video */
 }
 
 /* Botón de la cámara */
@@ -222,16 +261,20 @@ button:hover {
 /* Ajustes específicos para dispositivos móviles */
 @media (max-width: 768px) {
     #scanned-list li {
-        min-width: 100%; /* Ajusta el ancho completo en móviles */
+        min-width: 100%;
+        /* Ajusta el ancho completo en móviles */
     }
 
     #scanner-video {
-        width: 95%; /* Ajuste del video en móviles */
+        width: 95%;
+        /* Ajuste del video en móviles */
         height: auto;
     }
 
-    button, input {
-        width: 90%; /* Ancho del 90% para botones */
+    button,
+    input {
+        width: 90%;
+        /* Ancho del 90% para botones */
         padding: 15px;
         font-size: 16px;
         margin: 5px 0;
@@ -245,7 +288,9 @@ button:hover {
 
 /* Ajustes específicos para dispositivos de escritorio */
 @media (min-width: 769px) {
-    button, input {
+
+    button,
+    input {
         width: 300px;
         padding: 10px;
         font-size: 14px;
@@ -261,26 +306,36 @@ button:hover {
         margin: auto;
     }
 }
+
 /* Estilo para el botón "Generar Reporte" en verde */
 .btn-generar-reporte {
-    background-color: #4CAF50; /* Verde */
+    background-color: #4CAF50;
+    /* Verde */
     color: white;
     border: none;
     padding: 10px;
-    width: 120px; /* Más ancho para botón rectangular */
-    height: 50px; /* Mantener altura */
-    font-size: 18px; /* Ajustar tamaño de fuente si es necesario */
+    width: 120px;
+    /* Más ancho para botón rectangular */
+    height: 50px;
+    /* Mantener altura */
+    font-size: 18px;
+    /* Ajustar tamaño de fuente si es necesario */
     cursor: pointer;
-    border-radius: 10px; /* Borde ligeramente redondeado */
+    border-radius: 10px;
+    /* Borde ligeramente redondeado */
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 .btn-generar-reporte i {
-    font-size: 20px; /* Tamaño del icono */
-    margin-right: 8px; /* Espacio entre icono y texto */
-}
-.btn-generar-reporte:hover {
-    background-color: #45a049; /* Verde más oscuro en hover */
+    font-size: 20px;
+    /* Tamaño del icono */
+    margin-right: 8px;
+    /* Espacio entre icono y texto */
 }
 
+.btn-generar-reporte:hover {
+    background-color: #45a049;
+    /* Verde más oscuro en hover */
+}
