@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzA0YwFMMysx0Z6IN6-jz478TuPjmpCxFuoXVztaEKUmoBQwvDUnQXgOY_Tdd35ZwbRA/exec'; // <-- tu /exec
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0urMZMcpWhqVB8e7riks44ZljstKQxHOUcdcBORufr_bXEiPLBJTN97UoU2JxUocI7g/exec'; // <-- tu /exec
   const TIPO_FIJO = 'DESCARGUE';
 
   let products = [];            // desde CSV de Drive
